@@ -54,9 +54,9 @@ pygame.draw.rect(button_panel, (180, 110, 40), (0, 0, 360, 140), 6, border_radiu
 
 button_rect = button_panel.get_rect(center=(WIDTH // 2, 420))
 
-title_font = pygame.font.Font("assets/fonts/Heyam.ttf", 130)
-subtitle_font = pygame.font.Font("assets/fonts/Heyam.ttf", 42)
-start_font = pygame.font.Font("assets/fonts/Heyam.ttf", 70)
+title_font = pygame.font.Font("assets/fonts/heyam/Heyam.ttf", 130)
+subtitle_font = pygame.font.Font("assets/fonts/heyam/Heyam.ttf", 42)
+start_font = pygame.font.Font("assets/fonts/heyam/Heyam.ttf", 70)
 
 title_text = title_font.render("BLOOMIO", True, (255, 182, 210))
 title_shadow = title_font.render("BLOOMIO", True, (170, 100, 150))
