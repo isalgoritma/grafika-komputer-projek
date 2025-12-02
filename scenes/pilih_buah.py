@@ -131,7 +131,7 @@ class PilihBuah:
         
         # Teks nama tanaman
         font_size = int(80 * scale)
-        scaled_font = pygame.font.Font(None, font_size)
+        scaled_font = pygame.font.Font('assets/fonts/Heyam.ttf', font_size)
         
         title_shadow = scaled_font.render(card['name'], True, card['color'])
         title_text = scaled_font.render(card['name'], True, self.TEXT_GREEN)
@@ -166,7 +166,7 @@ class PilihBuah:
         
         # Teks tombol
         button_font_size = int(50 * scale)
-        button_font = pygame.font.Font(None, button_font_size)
+        button_font = pygame.font.Font('assets/fonts/Super Joyful.ttf', button_font_size)
         play_text = button_font.render("Play", True, self.TEXT_WHITE)
         play_x = button_x + button_width // 2 - play_text.get_width() // 2
         play_y = button_y + button_height // 2 - play_text.get_height() // 2

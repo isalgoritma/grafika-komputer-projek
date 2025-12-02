@@ -17,11 +17,13 @@ class GrowthApel:
         
         # Load font
         font_path = os.path.join('assets', 'fonts', 'Heyam.ttf')
+        font_path2 = os.path.join('assets', 'fonts', 'Super Joyful.ttf')
         try:
-            self.font_title = pygame.font.Font(font_path, 60)
             self.font_stage = pygame.font.Font(font_path, 40)
+            self.font_label = pygame.font.Font(font_path2, 28)
+            self.font_popup = pygame.font.Font(font_path2, 36)
             self.font_button = pygame.font.Font(font_path, 30)
-            self.font_small = pygame.font.Font(font_path, 24)
+            self.font_small = pygame.font.Font(font_path2, 24)
         except:
             self.font_title = pygame.font.Font(None, 60)
             self.font_stage = pygame.font.Font(None, 40)
@@ -576,17 +578,15 @@ class GrowthApel:
         bar_spacing = 45
         
         levels = [
-            ('💧 Air', self.water_level, self.WATER_BLUE),
-            ('☀ Cahaya', self.sunlight_level, self.YELLOW),
-            ('🌱 Pupuk', self.fertilizer_level, self.GREEN)
+            ('Air', self.water_level, self.WATER_BLUE),
+            ('Cahaya', self.sunlight_level, self.YELLOW),
+            ('Pupuk', self.fertilizer_level, self.GREEN)
         ]
         
         for i, (label, level, color) in enumerate(levels):
             y = bar_y + (i * bar_spacing)
             
-            label_text = self.font_button.render(label, True, self.WHITE)
-            label_bg = pygame.Rect(bar_x - 5, y - 8, label_text.get_width() + 10, 35)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 150), label_bg, 8)
+            label_text = self.font_label.render(label, True, self.WHITE)
             self.screen.blit(label_text, (bar_x, y))
             
             bar_bg = pygame.Rect(bar_x + 150, y, bar_width, bar_height)
@@ -609,9 +609,9 @@ class GrowthApel:
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
             pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
             
-            harvest_text = self.font_button.render("🍎 PANEN!", True, self.WHITE)
-            self.screen.blit(harvest_text, 
-                           (self.width // 2 - harvest_text.get_width() // 2, 
+            back_text = self.font_button.render("🍎 PANEN!", True, self.WHITE)
+            self.screen.blit(back_text, 
+                           (self.width // 2 - back_text.get_width() // 2, 
                             self.height - 165))
             
             count_text = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
@@ -621,14 +621,15 @@ class GrowthApel:
         
         # Message
         if self.message_timer > 0:
-            msg_text = self.font_button.render(self.message, True, self.WHITE)
+            msg_text = self.font_popup.render(self.message, True, self.WHITE)
             msg_bg = pygame.Rect(self.width // 2 - msg_text.get_width() // 2 - 20,
                                 self.height // 2 - 50, 
                                 msg_text.get_width() + 40, 60)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 200), msg_bg, 15)
+            self.draw_rounded_rect(self.screen, (150, 200, 130), msg_bg, 15)
             self.screen.blit(msg_text, 
                            (self.width // 2 - msg_text.get_width() // 2, 
-                            self.height // 2 - 35))
+                            self.height // 2 - 40))
+            pygame.draw.rect(self.screen, self.WHITE, msg_bg, 2, border_radius=12)
         
         # Back button
         back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
@@ -636,7 +637,7 @@ class GrowthApel:
         self.draw_rounded_rect(self.screen, color, back_button, 12)
         pygame.draw.rect(self.screen, self.WHITE, back_button, 2, border_radius=12)
         
-        back_text = self.font_button.render("← Kembali", True, self.WHITE)
+        back_text = self.font_button.render("Kembali", True, self.WHITE)
         self.screen.blit(back_text, (self.width - 90 - back_text.get_width() // 2, self.height - 57))
     
     def show_message(self, message):
