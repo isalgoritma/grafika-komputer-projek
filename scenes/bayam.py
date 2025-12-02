@@ -20,47 +20,86 @@ class GrowthBayam:
         try:
             self.font_title = pygame.font.Font(font_path, 60)
             self.font_stage = pygame.font.Font(font_path, 40)
-            self.font_button = pygame.font.Font(font_path, 35)
+            self.font_button = pygame.font.Font(font_path, 30)
+            self.font_small = pygame.font.Font(font_path, 24)
         except:
             self.font_title = pygame.font.Font(None, 60)
             self.font_stage = pygame.font.Font(None, 40)
-            self.font_button = pygame.font.Font(None, 35)
+            self.font_button = pygame.font.Font(None, 30)
+            self.font_small = pygame.font.Font(None, 24)
         
-        # Warna
-        self.SOIL_BROWN = (101, 67, 33)
-        self.SOIL_DARK = (76, 50, 25)
-        self.SPINACH_GREEN = (60, 140, 80)
-        self.DARK_GREEN = (40, 100, 60)
-        self.LIGHT_GREEN = (100, 180, 120)
-        self.STEM_GREEN = (80, 120, 80)
-        self.WHITE = (255, 255, 255)
-        self.YELLOW = (255, 220, 100)
-        self.BUTTON_GREEN = (126, 176, 105)
-        self.WATER_BLUE = (100, 180, 255)
+        # Warna realistis untuk pakcoy
+        # self.SOIL_BROWN = (101, 67, 33)
+        # self.SOIL_DARK = (76, 50, 25)
+        # self.PAKCOY_GREEN = (144, 238, 144)  # Hijau muda pakcoy
+        # self.DARK_GREEN = (34, 139, 34)
+        # self.LIGHT_GREEN = (200, 255, 200)
+        # self.STEM_WHITE = (245, 255, 250)  # Batang putih pakcoy
+        # self.STEM_LIGHT = (255, 255, 255)
+        # self.VEIN_GREEN = (100, 200, 100)
+        # self.WHITE = (255, 255, 255)
+        # self.YELLOW = (255, 223, 0)
+        # self.BUTTON_GREEN = (126, 176, 105)
+        # self.WATER_BLUE = (135, 206, 250)
+        # self.CLOUD_WHITE = (240, 248, 255)
         
-        # Tahapan pertumbuhan bayam
+        # Tahapan pertumbuhan pakcoy (30-45 hari)
         self.stages = [
             "Biji",
             "Kecambah",
-            "Vegetatif",
-            "Generatif",
-            "Panen"
+            "2 Daun Sejati",
+            "4-6 Daun",
+            "Vegetatif Penuh",
+            "Siap Panen"
         ]
         
         self.current_stage = 0
+        self.growth_progress = 0
+        self.stage_requirements = [12, 20, 30, 40, 50, 60]
         
         # Faktor pertumbuhan
-        self.water_level = 50
-        self.sunlight_level = 50
-        self.fertilizer_level = 50
+        self.water_level = 35
+        self.sunlight_level = 35
+        self.fertilizer_level = 35
         
-        # UI Buttons
-        self.buttons = {
-            'water': {'rect': None, 'hover': False, 'label': 'Air'},
-            'sun': {'rect': None, 'hover': False, 'label': 'Sinar'},
-            'fertilizer': {'rect': None, 'hover': False, 'label': 'Pupuk'},
-            'next': {'rect': None, 'hover': False, 'label': 'Tahap →'}
+        # Kebutuhan per detik
+        self.water_consumption = 3.5
+        self.sunlight_consumption = 2.5
+        self.fertilizer_consumption = 2.5
+        
+        # Awan interaktif
+        self.cloud = {
+            'x': self.width // 4,
+            'y': 100,
+            'width': 150,
+            'height': 80,
+            'dragging': False,
+            'raining': False,
+            'rain_drops': []
         }
+        
+        # Matahari
+        self.sun = {
+            'x': self.width - 150,
+            'y': 100,
+            'radius': 50,
+            'glow': 0
+        }
+        
+        # Pupuk
+        self.fertilizer_bag = {
+            'x': self.width - 200,
+            'y': self.height - 200,
+            'width': 80,
+            'height': 100,
+            'hover': False,
+            'particles': []
+        }
+        
+        # Harvest state
+        self.harvest_ready = False
+        self.harvest_complete = False
+        self.harvest_animation = 0
         
         # Particle effects
         self.particles = []
@@ -68,353 +107,780 @@ class GrowthBayam:
         # Animation
         self.plant_sway = 0
         self.leaf_wave = 0
-    
+        self.time = 0
+        
+        # Messages
+        self.message = ""
+        self.message_timer = 0
+        
     def draw_rounded_rect(self, surface, color, rect, radius):
         """Menggambar persegi dengan sudut melengkung"""
         pygame.draw.rect(surface, color, rect, border_radius=radius)
     
+    def draw_sky_elements(self):
+        """Menggambar awan dan matahari"""
+        # === AWAN ===
+        cloud_x = int(self.cloud['x'])
+        cloud_y = int(self.cloud['y'])
+        
+        # Bayangan awan
+        pygame.draw.ellipse(self.screen, (200, 200, 200), 
+                           (cloud_x + 5, cloud_y + 5, 60, 40))
+        pygame.draw.ellipse(self.screen, (200, 200, 200), 
+                           (cloud_x + 45, cloud_y + 5, 70, 50))
+        pygame.draw.ellipse(self.screen, (200, 200, 200), 
+                           (cloud_x + 85, cloud_y + 5, 60, 40))
+        
+        # Awan putih
+        pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
+                           (cloud_x, cloud_y, 60, 40))
+        pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
+                           (cloud_x + 40, cloud_y, 70, 50))
+        pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
+                           (cloud_x + 80, cloud_y, 60, 40))
+        
+        # Highlight awan
+        pygame.draw.ellipse(self.screen, (255, 255, 255), 
+                           (cloud_x + 10, cloud_y + 5, 40, 25))
+        
+        # Tetesan hujan
+        if self.cloud['raining']:
+            for drop in self.cloud['rain_drops']:
+                pygame.draw.line(self.screen, self.WATER_BLUE,
+                               (int(drop['x']), int(drop['y'])),
+                               (int(drop['x']), int(drop['y']) + 8), 2)
+        
+        # === MATAHARI ===
+        sun_x = int(self.sun['x'])
+        sun_y = int(self.sun['y'])
+        radius = self.sun['radius']
+        
+        # Cahaya glow
+        for i in range(3):
+            glow_radius = radius + 20 - (i * 7)
+            glow_alpha = 30 - (i * 10)
+            glow_surf = pygame.Surface((glow_radius * 2, glow_radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(glow_surf, (255, 255, 0, glow_alpha), 
+                             (glow_radius, glow_radius), glow_radius)
+            self.screen.blit(glow_surf, (sun_x - glow_radius, sun_y - glow_radius))
+        
+        # Sinar matahari
+        for i in range(12):
+            angle = (360 / 12) * i + self.time * 10
+            rad = math.radians(angle)
+            start_x = sun_x + math.cos(rad) * radius
+            start_y = sun_y + math.sin(rad) * radius
+            end_x = sun_x + math.cos(rad) * (radius + 25)
+            end_y = sun_y + math.sin(rad) * (radius + 25)
+            
+            pygame.draw.line(self.screen, (255, 223, 0),
+                           (int(start_x), int(start_y)),
+                           (int(end_x), int(end_y)), 4)
+        
+        # Lingkaran matahari
+        pygame.draw.circle(self.screen, (255, 200, 0), (sun_x, sun_y), radius)
+        pygame.draw.circle(self.screen, self.YELLOW, (sun_x, sun_y), radius - 5)
+        pygame.draw.circle(self.screen, (255, 255, 200), (sun_x - 10, sun_y - 10), 15)
+    
     def draw_soil(self):
-        """Menggambar tanah"""
+        """Menggambar tanah dengan tekstur"""
         soil_y = self.height - 250
         
-        # Tanah gelap
-        pygame.draw.rect(self.screen, self.SOIL_DARK, 
-                        (0, soil_y + 30, self.width, 220))
+        # Lapisan tanah
+        for i in range(5):
+            y_offset = i * 3
+            color_variation = (101 - i * 5, 67 - i * 3, 33 - i * 2)
+            pygame.draw.rect(self.screen, color_variation,
+                           (0, soil_y + 30 + y_offset, self.width, 3))
         
-        # Tanah terang
+        # Tanah gelap (bawah)
+        pygame.draw.rect(self.screen, self.SOIL_DARK, 
+                        (0, soil_y + 45, self.width, 205))
+        
+        # Tanah terang (atas)
         pygame.draw.rect(self.screen, self.SOIL_BROWN, 
-                        (0, soil_y, self.width, 30))
+                        (0, soil_y, self.width, 45))
         
         # Tekstur tanah
-        for i in range(100):
+        random.seed(42)
+        for i in range(150):
             x = random.randint(0, self.width)
             y = random.randint(soil_y + 30, self.height)
-            size = random.randint(1, 3)
-            pygame.draw.circle(self.screen, self.SOIL_DARK, (x, y), size)
+            size = random.randint(1, 4)
+            color_var = random.randint(0, 20)
+            pygame.draw.circle(self.screen, 
+                             (76 - color_var, 50 - color_var, 25 - color_var), 
+                             (x, y), size)
+        random.seed()
     
     def draw_seed(self, x, y):
-        """Menggambar biji bayam"""
-        # Biji kecil bulat
-        pygame.draw.circle(self.screen, (120, 80, 40), (x, y), 8)
-        pygame.draw.circle(self.screen, (150, 110, 60), (x, y), 5)
-        pygame.draw.circle(self.screen, (180, 140, 80), (x - 2, y - 2), 2)
+        """Menggambar biji pakcoy yang sangat kecil"""
+        # Biji pakcoy sangat kecil, bulat, coklat kemerahan
+        pygame.draw.circle(self.screen, (101, 67, 33), (x, y), 6)
+        pygame.draw.circle(self.screen, (139, 90, 43), (x, y), 4)
+        pygame.draw.circle(self.screen, (160, 110, 60), (x - 1, y - 1), 2)
     
     def draw_sprout(self, x, y):
-        """Menggambar kecambah bayam"""
-        sway = math.sin(self.plant_sway) * 2
+        """Menggambar kecambah dengan dua kotiledon"""
+        sway = math.sin(self.plant_sway) * 1.5
         
-        # Batang kecil
-        pygame.draw.line(self.screen, self.STEM_GREEN, 
-                        (x, y), (x + int(sway), y - 35), 4)
+        # Akar kecil
+        for i in range(3):
+            offset = (i - 1) * 8
+            root_end_x = x + offset + random.randint(-2, 2)
+            root_end_y = y + 15 + random.randint(0, 8)
+            pygame.draw.line(self.screen, (160, 110, 60),
+                           (x, y + 3), (root_end_x, root_end_y), 2)
         
-        # Dua daun embrio kecil (kotiledon)
-        # Daun kiri
-        leaf_points_left = [
-            (x + int(sway), y - 35),
-            (x + int(sway) - 12, y - 32),
-            (x + int(sway) - 8, y - 28),
-            (x + int(sway), y - 30)
-        ]
-        pygame.draw.polygon(self.screen, self.SPINACH_GREEN, leaf_points_left)
-        pygame.draw.polygon(self.screen, self.LIGHT_GREEN, [
-            (x + int(sway), y - 35),
-            (x + int(sway) - 10, y - 33),
-            (x + int(sway) - 6, y - 30)
-        ])
+        # Batang kecambah
+        pygame.draw.line(self.screen, (200, 255, 200), 
+                        (x, y), (x + int(sway), y - 30), 3)
         
-        # Daun kanan
-        leaf_points_right = [
-            (x + int(sway), y - 35),
-            (x + int(sway) + 12, y - 32),
-            (x + int(sway) + 8, y - 28),
-            (x + int(sway), y - 30)
-        ]
-        pygame.draw.polygon(self.screen, self.SPINACH_GREEN, leaf_points_right)
-        pygame.draw.polygon(self.screen, self.LIGHT_GREEN, [
-            (x + int(sway), y - 35),
-            (x + int(sway) + 10, y - 33),
-            (x + int(sway) + 6, y - 30)
-        ])
+        # Kotiledon (daun embrio) - bulat kecil
+        leaf_left = [(x + int(sway) - 12, y - 28), 
+                     (x + int(sway) - 6, y - 32), 
+                     (x + int(sway), y - 28)]
+        pygame.draw.polygon(self.screen, self.PAKCOY_GREEN, leaf_left)
+        pygame.draw.polygon(self.screen, self.LIGHT_GREEN, 
+                          [(x + int(sway) - 10, y - 29), 
+                           (x + int(sway) - 7, y - 31), 
+                           (x + int(sway), y - 28)])
+        
+        leaf_right = [(x + int(sway) + 12, y - 28), 
+                      (x + int(sway) + 6, y - 32), 
+                      (x + int(sway), y - 28)]
+        pygame.draw.polygon(self.screen, self.PAKCOY_GREEN, leaf_right)
+        pygame.draw.polygon(self.screen, self.LIGHT_GREEN, 
+                          [(x + int(sway) + 10, y - 29), 
+                           (x + int(sway) + 7, y - 31), 
+                           (x + int(sway), y - 28)])
     
-    def draw_spinach_leaf(self, x, y, size, angle, wave_offset=0):
-        """Menggambar daun bayam (oval dengan tekstur)"""
-        wave = math.sin(self.leaf_wave + wave_offset) * 2
+    def draw_pakcoy_leaf(self, x, y, width, height, angle, maturity=1.0):
+        """Menggambar daun pakcoy MEMANJANG dengan batang putih panjang"""
+        leaf_surf = pygame.Surface((int(width * 3), int(height * 3)), pygame.SRCALPHA)
         
-        # Rotasi untuk variasi
-        cos_a = math.cos(math.radians(angle))
-        sin_a = math.sin(math.radians(angle))
+        center_x = width * 1.5
+        center_y = height * 2
         
-        # Daun berbentuk oval memanjang
-        leaf_width = int(size * 0.6)
-        leaf_height = int(size)
+        # BATANG PUTIH PANJANG (petiole) - ciri khas pakcoy
+        stem_width = int(width * 0.35 * maturity)
+        stem_length = int(height * 1.2)  # Batang lebih panjang
         
-        # Gambar oval untuk daun
-        leaf_surf = pygame.Surface((leaf_width * 2, leaf_height * 2), pygame.SRCALPHA)
-        pygame.draw.ellipse(leaf_surf, self.SPINACH_GREEN, 
-                           (0, 0, leaf_width * 2, leaf_height * 2))
+        # Batang trapesium (lebih lebar di bawah)
+        stem_points = [
+            (center_x - stem_width * 0.6, center_y),  # Bawah kiri (lebih lebar)
+            (center_x + stem_width * 0.6, center_y),  # Bawah kanan (lebih lebar)
+            (center_x + stem_width * 0.3, center_y - stem_length),  # Atas kanan
+            (center_x - stem_width * 0.3, center_y - stem_length)   # Atas kiri
+        ]
         
-        # Highlight
-        pygame.draw.ellipse(leaf_surf, self.LIGHT_GREEN, 
-                           (5, 5, leaf_width * 2 - 20, leaf_height * 2 - 20))
+        # Shadow batang
+        shadow_points = [(p[0] + 2, p[1] + 2) for p in stem_points]
+        pygame.draw.polygon(leaf_surf, (200, 210, 200), shadow_points)
         
-        # Urat daun (garis tengah)
-        pygame.draw.line(leaf_surf, self.DARK_GREEN, 
-                        (leaf_width, 0), (leaf_width, leaf_height * 2), 2)
+        # Batang utama putih
+        pygame.draw.polygon(leaf_surf, self.STEM_WHITE, stem_points)
+        
+        # Highlight batang (efek mengkilap)
+        highlight_points = [
+            (center_x - stem_width * 0.4, center_y),
+            (center_x - stem_width * 0.1, center_y),
+            (center_x - stem_width * 0.05, center_y - stem_length),
+            (center_x - stem_width * 0.2, center_y - stem_length)
+        ]
+        pygame.draw.polygon(leaf_surf, self.STEM_LIGHT, highlight_points)
+        
+        # Border batang
+        pygame.draw.polygon(leaf_surf, (230, 245, 230), stem_points, 2)
+        
+        # Garis tengah batang
+        pygame.draw.line(leaf_surf, (220, 235, 220),
+                       (center_x, center_y),
+                       (center_x, center_y - stem_length), 1)
+        
+        # DAUN HIJAU MEMANJANG (blade) - bentuk spatula/sendok
+        blade_top_y = center_y - stem_length
+        blade_width = width * 0.85
+        blade_height = height * 0.9
+        
+        # Membuat bentuk daun pakcoy yang memanjang (spoon-shaped)
+        leaf_points = []
+        num_points = 20
+        for i in range(num_points + 1):
+            angle_deg = 180 + (180 * i / num_points)
+            rad = math.radians(angle_deg)
+            
+            # Bentuk oval memanjang
+            if i < num_points // 4 or i > num_points * 3 // 4:
+                # Bagian bawah (dekat batang) - lebih sempit
+                r_factor = 0.6
+            else:
+                # Bagian tengah-atas - lebih lebar
+                r_factor = 1.0
+            
+            px = center_x + math.cos(rad) * blade_width * r_factor
+            py = blade_top_y - math.sin(rad) * blade_height * 0.5
+            leaf_points.append((px, py))
+        
+        # Shadow daun
+        shadow_leaf = [(p[0] + 3, p[1] + 3) for p in leaf_points]
+        pygame.draw.polygon(leaf_surf, (50, 100, 50), shadow_leaf)
+        
+        # Daun outline gelap
+        pygame.draw.polygon(leaf_surf, self.DARK_GREEN, leaf_points)
+        
+        # Daun utama hijau muda
+        inner_leaf = [(p[0] + (center_x - p[0]) * 0.05, p[1] + (blade_top_y - p[1]) * 0.05) 
+                     for p in leaf_points]
+        pygame.draw.polygon(leaf_surf, self.PAKCOY_GREEN, inner_leaf)
+        
+        # Highlight di tengah daun (area lebih terang)
+        highlight_leaf = [(p[0] + (center_x - p[0]) * 0.3, p[1] + (blade_top_y - p[1]) * 0.3) 
+                         for p in leaf_points[5:15]]
+        if len(highlight_leaf) > 2:
+            pygame.draw.polygon(leaf_surf, self.LIGHT_GREEN, highlight_leaf)
+        
+        # URAT DAUN (veins) - pola khas pakcoy
+        vein_color = self.VEIN_GREEN
+        
+        # Urat tengah utama (dari batang ke ujung daun)
+        pygame.draw.line(leaf_surf, vein_color,
+                       (center_x, center_y - stem_length + 5),
+                       (center_x, blade_top_y - blade_height * 0.5), 4)
+        
+        # Urat samping (bercabang dari urat tengah)
+        num_veins = 6
+        for i in range(num_veins):
+            side = 1 if i % 2 == 0 else -1
+            vein_start_y = center_y - stem_length + (i * blade_height * 0.15)
+            
+            vein_end_x = center_x + side * blade_width * 0.65
+            vein_end_y = vein_start_y - blade_height * 0.15
+            
+            # Urat utama
+            pygame.draw.line(leaf_surf, vein_color,
+                           (center_x, vein_start_y),
+                           (vein_end_x, vein_end_y), 3)
+            
+            # Urat cabang kecil
+            for j in range(2):
+                sub_vein_x = center_x + (vein_end_x - center_x) * (0.4 + j * 0.3)
+                sub_vein_y = vein_start_y + (vein_end_y - vein_start_y) * (0.4 + j * 0.3)
+                sub_end_x = sub_vein_x + side * blade_width * 0.15
+                sub_end_y = sub_vein_y - blade_height * 0.08
+                
+                pygame.draw.line(leaf_surf, vein_color,
+                               (sub_vein_x, sub_vein_y),
+                               (sub_end_x, sub_end_y), 1)
         
         # Rotate and blit
         rotated = pygame.transform.rotate(leaf_surf, angle)
-        rect = rotated.get_rect(center=(x + int(wave), y))
+        rect = rotated.get_rect(center=(int(x), int(y)))
         self.screen.blit(rotated, rect)
     
-    def draw_vegetative(self, x, y):
-        """Menggambar fase vegetatif (banyak daun)"""
+    def draw_two_true_leaves(self, x, y):
+        """Menggambar 2 daun sejati pertama"""
+        sway = math.sin(self.plant_sway) * 2
+        
+        # Batang pusat sangat pendek
+        pygame.draw.line(self.screen, self.STEM_WHITE, 
+                        (x, y), (x + int(sway), y - 15), 5)
+        
+        # 2 daun sejati kecil
+        leaf_y = y - 20
+        leaf_x = x + int(sway)
+        
+        self.draw_pakcoy_leaf(leaf_x - 20, leaf_y, 25, 35, -15, 0.6)
+        self.draw_pakcoy_leaf(leaf_x + 20, leaf_y, 25, 35, 15, 0.6)
+    
+    def draw_four_to_six_leaves(self, x, y):
+        """Menggambar 4-6 daun (rosette mulai terbentuk)"""
         sway = math.sin(self.plant_sway) * 3
         
-        # Batang pusat (pendek, bayam tumbuh dari roset)
-        pygame.draw.line(self.screen, self.STEM_GREEN, 
-                        (x, y), (x + int(sway), y - 20), 6)
+        # Batang pusat
+        pygame.draw.line(self.screen, self.STEM_WHITE, 
+                        (x, y), (x + int(sway), y - 25), 8)
         
-        # Bayam tumbuh dalam bentuk roset (daun melingkar dari pusat)
-        # 8-10 daun
-        num_leaves = 10
-        for i in range(num_leaves):
-            angle = (360 / num_leaves) * i
-            distance = 35 + (i % 3) * 10
-            rad = math.radians(angle)
-            
-            leaf_x = x + int(math.cos(rad) * distance) + int(sway * 0.5)
-            leaf_y = y - 20 + int(math.sin(rad) * distance * 0.6)
-            
-            leaf_size = 40 + (i % 3) * 5
-            leaf_angle = angle - 90
-            
-            self.draw_spinach_leaf(leaf_x, leaf_y, leaf_size, leaf_angle, i * 0.5)
+        # 6 daun dalam formasi rosette
+        center_x = x + int(sway)
+        center_y = y - 30
+        
+        leaf_positions = [
+            (-30, -10, -25, 0.7),
+            (30, -10, 25, 0.7),
+            (-25, 5, -15, 0.75),
+            (25, 5, 15, 0.75),
+            (-15, 15, -5, 0.8),
+            (15, 15, 5, 0.8)
+        ]
+        
+        for lx, ly, angle, maturity in leaf_positions:
+            wave = math.sin(self.leaf_wave + lx * 0.1) * 2
+            self.draw_pakcoy_leaf(center_x + lx, center_y + ly + int(wave), 
+                                 30, 42, angle, maturity)
     
-    def draw_generative(self, x, y):
-        """Menggambar fase generatif (mulai berbunga - opsional untuk bayam)"""
-        # Bayam fase generatif mulai tumbuh tinggi (bolting)
+    def draw_full_vegetative(self, x, y):
+        """Menggambar fase vegetatif penuh (rosette besar)"""
         sway = math.sin(self.plant_sway) * 4
         
-        # Batang memanjang ke atas
-        pygame.draw.line(self.screen, self.STEM_GREEN, 
-                        (x, y), (x + int(sway), y - 120), 8)
+        # Batang pusat tebal
+        pygame.draw.line(self.screen, self.STEM_LIGHT, 
+                        (x, y), (x + int(sway), y - 35), 12)
+        pygame.draw.line(self.screen, self.STEM_WHITE, 
+                        (x, y), (x + int(sway), y - 35), 10)
         
-        # Daun-daun di batang
-        for i in range(5):
-            leaf_y = y - 25 - (i * 20)
-            leaf_x = x + int(sway * (1 - i * 0.15))
+        # 10-12 daun dalam rosette sempurna
+        center_x = x + int(sway)
+        center_y = y - 40
+        
+        # Layer 1 (terluar)
+        for i in range(6):
+            angle_deg = (360 / 6) * i
+            distance = 50
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.7
+            wave = math.sin(self.leaf_wave + i * 0.5) * 3
             
-            # Daun kiri
-            self.draw_spinach_leaf(leaf_x - 15, leaf_y, 35, -45 + i * 5, i)
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 35, 50, 
+                                 angle_deg - 90, 1.0)
+        
+        # Layer 2 (tengah)
+        for i in range(4):
+            angle_deg = (360 / 4) * i + 45
+            distance = 30
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.6
+            wave = math.sin(self.leaf_wave + i * 0.7) * 2
             
-            # Daun kanan
-            self.draw_spinach_leaf(leaf_x + 15, leaf_y, 35, 45 - i * 5, i + 0.3)
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 32, 46, 
+                                 angle_deg - 90, 0.95)
         
-        # Bunga kecil di atas (kuning-hijau)
-        flower_x = x + int(sway)
-        flower_y = y - 125
-        
-        # Cluster bunga kecil
-        for i in range(5):
-            f_x = flower_x + random.randint(-8, 8)
-            f_y = flower_y + random.randint(-5, 5)
-            pygame.draw.circle(self.screen, self.YELLOW, (f_x, f_y), 3)
-            pygame.draw.circle(self.screen, (255, 255, 150), (f_x, f_y), 2)
+        # Layer 3 (dalam)
+        for i in range(3):
+            angle_deg = (360 / 3) * i
+            distance = 15
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.5
+            
+            self.draw_pakcoy_leaf(lx, ly, 28, 40, 
+                                 angle_deg - 90, 0.85)
     
-    def draw_harvest(self, x, y):
-        """Menggambar hasil panen bayam"""
-        # Tampilkan beberapa daun bayam yang sudah dipetik
-        for i in range(5):
-            leaf_x = x - 80 + (i * 40)
-            leaf_y = y - 60 + ((i % 2) * 20)
+    def draw_harvest_ready(self, x, y):
+        """Menggambar pakcoy siap panen (rosette maksimal)"""
+        if self.harvest_complete:
+            # Tampilan setelah dipanen - sisa akar
+            pygame.draw.line(self.screen, self.STEM_WHITE, (x, y), (x, y - 20), 8)
             
-            # Daun bayam segar
-            self.draw_spinach_leaf(leaf_x, leaf_y, 50, -45 + (i * 20), i * 0.5)
+            # Sisa daun kecil
+            for i in range(3):
+                angle = (360 / 3) * i
+                rad = math.radians(angle)
+                lx = x + math.cos(rad) * 12
+                ly = y - 20 + math.sin(rad) * 8
+                pygame.draw.ellipse(self.screen, self.PAKCOY_GREEN,
+                                  (lx - 8, ly - 5, 16, 10))
+            
+            # Teks "Terpanen!"
+            harvest_text = self.font_button.render("Terpanen!", True, self.DARK_GREEN)
+            self.screen.blit(harvest_text, 
+                           (x - harvest_text.get_width() // 2, y - 80))
+            return
         
-        # Teks "Panen!"
-        harvest_font = pygame.font.Font(None, 60)
-        harvest_text = harvest_font.render("Panen!", True, self.SPINACH_GREEN)
-        harvest_shadow = harvest_font.render("Panen!", True, self.DARK_GREEN)
+        sway = math.sin(self.plant_sway) * 5
         
-        text_x = x - harvest_text.get_width() // 2
-        text_y = y - 140
+        # Batang pusat sangat tebal
+        pygame.draw.line(self.screen, self.STEM_LIGHT, 
+                        (x, y), (x + int(sway), y - 45), 15)
+        pygame.draw.line(self.screen, self.STEM_WHITE, 
+                        (x, y), (x + int(sway), y - 45), 13)
         
-        self.screen.blit(harvest_shadow, (text_x + 3, text_y + 3))
-        self.screen.blit(harvest_text, (text_x, text_y))
+        # Highlight batang
+        pygame.draw.line(self.screen, (255, 255, 255), 
+                        (x - 3, y), (x - 3 + int(sway), y - 45), 5)
+        
+        # 14-16 daun dalam rosette maksimal
+        center_x = x + int(sway)
+        center_y = y - 50
+        
+        # Layer 1 (terluar - daun terbesar)
+        for i in range(8):
+            angle_deg = (360 / 8) * i
+            distance = 65
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.7
+            wave = math.sin(self.leaf_wave + i * 0.4) * 4
+            
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 42, 58, 
+                                 angle_deg - 90, 1.0)
+        
+        # Layer 2 (tengah)
+        for i in range(5):
+            angle_deg = (360 / 5) * i + 36
+            distance = 42
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.65
+            wave = math.sin(self.leaf_wave + i * 0.6) * 3
+            
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 38, 52, 
+                                 angle_deg - 90, 0.95)
+        
+        # Layer 3 (dalam)
+        for i in range(4):
+            angle_deg = (360 / 4) * i + 20
+            distance = 22
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.6
+            wave = math.sin(self.leaf_wave + i * 0.8) * 2
+            
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 32, 45, 
+                                 angle_deg - 90, 0.9)
+        
+        # Indikator bisa dipanen (glow effect)
+        if not self.harvest_complete:
+            glow_radius = 90 + math.sin(self.time * 3) * 10
+            glow_surf = pygame.Surface((int(glow_radius * 2), int(glow_radius * 2)), 
+                                      pygame.SRCALPHA)
+            pygame.draw.circle(glow_surf, (144, 238, 144, 30), 
+                             (int(glow_radius), int(glow_radius)), int(glow_radius))
+            self.screen.blit(glow_surf, 
+                           (center_x - glow_radius, center_y - glow_radius * 0.7))
     
     def draw_plant(self):
         """Menggambar tanaman sesuai tahap"""
         center_x = self.width // 2
         soil_y = self.height - 250
         
-        if self.current_stage == 0:  # Biji
+        if self.current_stage == 0:
             self.draw_seed(center_x, soil_y + 15)
-        elif self.current_stage == 1:  # Kecambah
+        elif self.current_stage == 1:
             self.draw_sprout(center_x, soil_y)
-        elif self.current_stage == 2:  # Vegetatif
-            self.draw_vegetative(center_x, soil_y)
-        elif self.current_stage == 3:  # Generatif
-            self.draw_generative(center_x, soil_y)
-        elif self.current_stage == 4:  # Panen
-            self.draw_harvest(center_x, soil_y)
+        elif self.current_stage == 2:
+            self.draw_two_true_leaves(center_x, soil_y)
+        elif self.current_stage == 3:
+            self.draw_four_to_six_leaves(center_x, soil_y)
+        elif self.current_stage == 4:
+            self.draw_full_vegetative(center_x, soil_y)
+        elif self.current_stage == 5:
+            self.draw_harvest_ready(center_x, soil_y)
+    
+    def draw_fertilizer_bag(self):
+        """Menggambar kantong pupuk"""
+        x = self.fertilizer_bag['x']
+        y = self.fertilizer_bag['y']
+        w = self.fertilizer_bag['width']
+        h = self.fertilizer_bag['height']
+        
+        pygame.draw.rect(self.screen, (50, 50, 50), (x + 5, y + 5, w, h), border_radius=10)
+        
+        color = (160, 82, 45) if not self.fertilizer_bag['hover'] else (139, 69, 19)
+        pygame.draw.rect(self.screen, color, (x, y, w, h), border_radius=10)
+        pygame.draw.rect(self.screen, (101, 67, 33), (x, y, w, h), 3, border_radius=10)
+        
+        pygame.draw.rect(self.screen, (222, 184, 135), (x + 10, y + 20, w - 20, h - 40), border_radius=5)
+        
+        text = self.font_small.render("PUPUK", True, (101, 67, 33))
+        self.screen.blit(text, (x + w // 2 - text.get_width() // 2, y + 35))
+        
+        for particle in self.fertilizer_bag['particles']:
+            pygame.draw.circle(self.screen, (139, 90, 43),
+                             (int(particle['x']), int(particle['y'])), 
+                             particle['size'])
     
     def draw_ui(self):
-        """Menggambar UI controls"""
-        # Stage indicator
-        stage_text = self.font_stage.render(
-            f"Tahap: {self.stages[self.current_stage]}", 
-            True, self.WHITE
-        )
-        stage_bg = pygame.Rect(self.width // 2 - 200, 20, 400, 60)
-        self.draw_rounded_rect(self.screen, (88, 129, 87, 200), stage_bg, 20)
-        self.screen.blit(stage_text, 
-                        (self.width // 2 - stage_text.get_width() // 2, 35))
+        """Menggambar UI dan progress bars"""
+        # Progress bar
+        progress_bg = pygame.Rect(self.width // 2 - 200, 20, 400, 25)
+        self.draw_rounded_rect(self.screen, (50, 50, 50), progress_bg, 12)
         
-        # Level bars (Air, Sinar, Pupuk)
-        bar_width = 150
-        bar_height = 20
+        if self.current_stage < len(self.stages) - 1:
+            progress_width = int((self.growth_progress / self.stage_requirements[self.current_stage]) * 380)
+            progress_fill = pygame.Rect(self.width // 2 - 190, 25, progress_width, 15)
+            pygame.draw.rect(self.screen, (144, 238, 144), progress_fill, border_radius=8)
+        
+        pygame.draw.rect(self.screen, self.WHITE, progress_bg, 2, border_radius=12)
+        
+        stage_text = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
+        self.screen.blit(stage_text, (self.width // 2 - stage_text.get_width() // 2, 55))
+        
+        # Level bars
         bar_x = 30
-        bar_start_y = 100
-        bar_spacing = 50
+        bar_y = 120
+        bar_width = 200
+        bar_height = 25
+        bar_spacing = 45
         
         levels = [
-            ('Air', self.water_level, (100, 180, 255)),
-            ('Sinar', self.sunlight_level, (255, 220, 100)),
-            ('Pupuk', self.fertilizer_level, (100, 180, 100))
+            ('💧 Air', self.water_level, self.WATER_BLUE),
+            ('☀️ Cahaya', self.sunlight_level, self.YELLOW),
+            ('🌱 Pupuk', self.fertilizer_level, self.PAKCOY_GREEN)
         ]
         
         for i, (label, level, color) in enumerate(levels):
-            y = bar_start_y + (i * bar_spacing)
+            y = bar_y + (i * bar_spacing)
             
-            # Label
             label_text = self.font_button.render(label, True, self.WHITE)
-            self.screen.blit(label_text, (bar_x, y - 5))
+            label_bg = pygame.Rect(bar_x - 5, y - 8, label_text.get_width() + 10, 35)
+            self.draw_rounded_rect(self.screen, (0, 0, 0, 150), label_bg, 8)
+            self.screen.blit(label_text, (bar_x, y))
             
-            # Bar background
-            bar_bg = pygame.Rect(bar_x + 100, y, bar_width, bar_height)
-            pygame.draw.rect(self.screen, (50, 50, 50), bar_bg, border_radius=10)
+            bar_bg = pygame.Rect(bar_x + 150, y, bar_width, bar_height)
+            pygame.draw.rect(self.screen, (50, 50, 50), bar_bg, border_radius=12)
             
-            # Bar fill
             fill_width = int((level / 100) * bar_width)
             if fill_width > 0:
-                bar_fill = pygame.Rect(bar_x + 100, y, fill_width, bar_height)
-                pygame.draw.rect(self.screen, color, bar_fill, border_radius=10)
+                bar_fill = pygame.Rect(bar_x + 150, y, fill_width, bar_height)
+                pygame.draw.rect(self.screen, color, bar_fill, border_radius=12)
             
-            # Border
-            pygame.draw.rect(self.screen, self.WHITE, bar_bg, 2, border_radius=10)
-        
-        # Control buttons (bottom)
-        button_y = self.height - 120
-        button_spacing = 150
-        start_x = self.width // 2 - (button_spacing * 1.5)
-        
-        controls = ['water', 'sun', 'fertilizer']
-        for i, control in enumerate(controls):
-            button_x = start_x + (i * button_spacing)
-            button_rect = pygame.Rect(button_x, button_y, 120, 80)
-            self.buttons[control]['rect'] = button_rect
+            pygame.draw.rect(self.screen, self.WHITE, bar_bg, 2, border_radius=12)
             
-            # Button background
-            color = (126, 176, 105) if not self.buttons[control]['hover'] else (150, 200, 130)
-            self.draw_rounded_rect(self.screen, color, button_rect, 15)
+            pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
+            self.screen.blit(pct_text, (bar_x + 150 + bar_width + 10, y + 2))
+        
+        # Harvest button (hanya muncul saat siap panen)
+        if self.current_stage == 5 and not self.harvest_complete:
+            harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
+            btn_color = (144, 238, 144) if not harvest_btn.collidepoint(pygame.mouse.get_pos()) else (100, 200, 100)
+            self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
+            pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
             
-            # Border
-            pygame.draw.rect(self.screen, (88, 129, 87), button_rect, 3, border_radius=15)
+            harvest_text = self.font_button.render("🥬 PANEN!", True, self.WHITE)
+            self.screen.blit(harvest_text, 
+                           (self.width // 2 - harvest_text.get_width() // 2, 
+                            self.height - 165))
             
-            # Label
-            label = self.font_button.render(self.buttons[control]['label'], True, self.WHITE)
-            self.screen.blit(label, 
-                           (button_x + 60 - label.get_width() // 2, button_y + 50))
+            weight_text = self.font_small.render("~200-300g", True, self.WHITE)
+            self.screen.blit(weight_text,
+                           (self.width // 2 - weight_text.get_width() // 2,
+                            self.height - 135))
         
-        # Next stage button
-        next_button_rect = pygame.Rect(self.width - 250, button_y, 220, 80)
-        self.buttons['next']['rect'] = next_button_rect
+        # Message
+        if self.message_timer > 0:
+            msg_text = self.font_button.render(self.message, True, self.WHITE)
+            msg_bg = pygame.Rect(self.width // 2 - msg_text.get_width() // 2 - 20,
+                                self.height // 2 - 50, 
+                                msg_text.get_width() + 40, 60)
+            self.draw_rounded_rect(self.screen, (0, 0, 0, 200), msg_bg, 15)
+            self.screen.blit(msg_text, 
+                           (self.width // 2 - msg_text.get_width() // 2, 
+                            self.height // 2 - 35))
         
-        color = (126, 176, 105) if not self.buttons['next']['hover'] else (150, 200, 130)
-        self.draw_rounded_rect(self.screen, color, next_button_rect, 15)
-        pygame.draw.rect(self.screen, (88, 129, 87), next_button_rect, 3, border_radius=15)
+        # Back button
+        back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
+        color = self.BUTTON_GREEN if not back_button.collidepoint(pygame.mouse.get_pos()) else (150, 200, 130)
+        self.draw_rounded_rect(self.screen, color, back_button, 12)
+        pygame.draw.rect(self.screen, self.WHITE, back_button, 2, border_radius=12)
         
-        next_text = self.font_button.render("Tahap →", True, self.WHITE)
-        self.screen.blit(next_text, 
-                        (self.width - 140 - next_text.get_width() // 2, button_y + 30))
+        back_text = self.font_button.render("← Kembali", True, self.WHITE)
+        self.screen.blit(back_text, (self.width - 90 - back_text.get_width() // 2, self.height - 57))
     
-    def add_particles(self, x, y, color, count=10):
-        """Tambah particle effects"""
-        for _ in range(count):
-            self.particles.append({
-                'x': x,
-                'y': y,
-                'vx': random.uniform(-2, 2),
-                'vy': random.uniform(-5, -2),
-                'life': 1.0,
-                'color': color,
-                'size': random.randint(2, 5)
-            })
+    def show_message(self, message):
+        """Tampilkan pesan sementara"""
+        self.message = message
+        self.message_timer = 2.0
     
     def handle_event(self, event):
         """Handle input events"""
         if event.type == pygame.MOUSEMOTION:
             mouse_pos = pygame.mouse.get_pos()
-            for key in self.buttons:
-                if self.buttons[key]['rect']:
-                    self.buttons[key]['hover'] = self.buttons[key]['rect'].collidepoint(mouse_pos)
+            
+            bag_rect = pygame.Rect(
+                self.fertilizer_bag['x'],
+                self.fertilizer_bag['y'],
+                self.fertilizer_bag['width'],
+                self.fertilizer_bag['height']
+            )
+            self.fertilizer_bag['hover'] = bag_rect.collidepoint(mouse_pos)
+            
+            if self.cloud['dragging']:
+                self.cloud['x'] = mouse_pos[0] - self.cloud['width'] // 2
+                self.cloud['x'] = max(50, min(self.width - 200, self.cloud['x']))
         
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             
-            if self.buttons['water']['rect'] and self.buttons['water']['rect'].collidepoint(mouse_pos):
-                self.water_level = min(100, self.water_level + 20)
-                self.add_particles(mouse_pos[0], mouse_pos[1], self.WATER_BLUE, 15)
-                print("Disiram!")
+            # Harvest button
+            if self.current_stage == 5 and not self.harvest_complete:
+                harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
+                if harvest_btn.collidepoint(mouse_pos):
+                    self.harvest_complete = True
+                    self.harvest_animation = 1.0
+                    self.show_message("Pakcoy Terpanen! Berat: 250g")
+                    
+                    # Particle effect saat panen
+                    center_x = self.width // 2
+                    center_y = self.height - 300
+                    for _ in range(50):
+                        self.particles.append({
+                            'x': center_x,
+                            'y': center_y,
+                            'vx': random.uniform(-6, 6),
+                            'vy': random.uniform(-8, -3),
+                            'life': 1.5,
+                            'color': self.PAKCOY_GREEN,
+                            'size': random.randint(3, 8)
+                        })
+                    
+                    # Timer untuk pindah ke apresiasi.py
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 2500)
             
-            elif self.buttons['sun']['rect'] and self.buttons['sun']['rect'].collidepoint(mouse_pos):
-                self.sunlight_level = min(100, self.sunlight_level + 20)
-                self.add_particles(mouse_pos[0], mouse_pos[1], self.YELLOW, 15)
-                print("Dijemur!")
+            # Cloud
+            cloud_rect = pygame.Rect(
+                self.cloud['x'], self.cloud['y'],
+                self.cloud['width'], self.cloud['height']
+            )
+            if cloud_rect.collidepoint(mouse_pos):
+                self.cloud['dragging'] = True
+                self.cloud['raining'] = True
             
-            elif self.buttons['fertilizer']['rect'] and self.buttons['fertilizer']['rect'].collidepoint(mouse_pos):
-                self.fertilizer_level = min(100, self.fertilizer_level + 20)
-                self.add_particles(mouse_pos[0], mouse_pos[1], self.SPINACH_GREEN, 15)
-                print("Dipupuk!")
+            # Sun
+            sun_dist = math.sqrt((mouse_pos[0] - self.sun['x'])**2 + 
+                               (mouse_pos[1] - self.sun['y'])**2)
+            if sun_dist < self.sun['radius'] + 30:
+                self.sunlight_level = min(100, self.sunlight_level + 25)
+                self.show_message("Cahaya matahari +25%!")
+                self.sun['glow'] = 50
             
-            elif self.buttons['next']['rect'] and self.buttons['next']['rect'].collidepoint(mouse_pos):
-                if self.current_stage < len(self.stages) - 1:
-                    self.current_stage += 1
-                    print(f"Tahap: {self.stages[self.current_stage]}")
-                else:
-                    print("Selesai! Kembali ke menu...")
-                    self.scene_manager.change_scene("pilih_sayur")
+            # Fertilizer
+            bag_rect = pygame.Rect(
+                self.fertilizer_bag['x'],
+                self.fertilizer_bag['y'],
+                self.fertilizer_bag['width'],
+                self.fertilizer_bag['height']
+            )
+            if bag_rect.collidepoint(mouse_pos):
+                self.fertilizer_level = min(100, self.fertilizer_level + 25)
+                self.show_message("Pupuk ditambahkan +25%!")
+                
+                for _ in range(15):
+                    self.fertilizer_bag['particles'].append({
+                        'x': mouse_pos[0],
+                        'y': mouse_pos[1],
+                        'vx': random.uniform(-3, 3),
+                        'vy': random.uniform(-8, -3),
+                        'life': 1.0,
+                        'size': random.randint(2, 4)
+                    })
+            
+            # Back button
+            back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
+            if back_button.collidepoint(mouse_pos):
+                self.scene_manager.change_scene("pilih_sayur")
+        
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.cloud['dragging'] = False
+            self.cloud['raining'] = False
+            self.cloud['rain_drops'].clear()
+        
+        elif event.type == pygame.USEREVENT + 1:
+            # Pindah ke apresiasi.py setelah panen
+            self.scene_manager.change_scene("apresiasi", plant_type="pakcoy")
+            pygame.time.set_timer(pygame.USEREVENT + 1, 0)
     
     def update(self, dt):
-        """Update animasi"""
-        self.plant_sway += dt * 2
-        self.leaf_wave += dt * 3
+        """Update logic dan animasi"""
+        self.time += dt
+        self.plant_sway += dt * 1.5
+        self.leaf_wave += dt * 2
+        
+        if self.message_timer > 0:
+            self.message_timer -= dt
+        
+        # Update rain
+        if self.cloud['raining']:
+            if random.random() < 0.5:
+                self.cloud['rain_drops'].append({
+                    'x': self.cloud['x'] + random.uniform(20, self.cloud['width'] - 20),
+                    'y': self.cloud['y'] + self.cloud['height'],
+                    'vy': random.uniform(8, 12)
+                })
+            
+            soil_y = self.height - 250
+            for drop in self.cloud['rain_drops'][:]:
+                drop['y'] += drop['vy']
+                
+                if drop['y'] >= soil_y:
+                    self.water_level = min(100, self.water_level + 0.5)
+                    self.cloud['rain_drops'].remove(drop)
+                    
+                    for _ in range(3):
+                        self.particles.append({
+                            'x': drop['x'],
+                            'y': soil_y,
+                            'vx': random.uniform(-2, 2),
+                            'vy': random.uniform(-3, -1),
+                            'life': 0.5,
+                            'color': self.WATER_BLUE,
+                            'size': 2
+                        })
         
         # Update particles
         for particle in self.particles[:]:
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
-            particle['vy'] += 0.2  # Gravity
+            particle['vy'] += 0.3
             particle['life'] -= dt
             if particle['life'] <= 0:
                 self.particles.remove(particle)
         
-        # Decrease levels gradually
-        self.water_level = max(0, self.water_level - dt * 2)
-        self.sunlight_level = max(0, self.sunlight_level - dt * 2)
-        self.fertilizer_level = max(0, self.fertilizer_level - dt * 2)
+        # Update fertilizer particles
+        for particle in self.fertilizer_bag['particles'][:]:
+            particle['x'] += particle['vx']
+            particle['y'] += particle['vy']
+            particle['vy'] += 0.2
+            particle['life'] -= dt
+            if particle['life'] <= 0:
+                self.fertilizer_bag['particles'].remove(particle)
+        
+        if self.sun['glow'] > 0:
+            self.sun['glow'] = max(0, self.sun['glow'] - dt * 50)
+        
+        # Growth logic
+        if self.current_stage < len(self.stages) - 1 and not self.harvest_complete:
+            if (self.water_level > 20 and 
+                self.sunlight_level > 20 and 
+                self.fertilizer_level > 20):
+                
+                growth_rate = 6
+                self.growth_progress += growth_rate * dt
+                
+                self.water_level = max(0, self.water_level - self.water_consumption * dt)
+                self.sunlight_level = max(0, self.sunlight_level - self.sunlight_consumption * dt)
+                self.fertilizer_level = max(0, self.fertilizer_level - self.fertilizer_consumption * dt)
+                
+                if self.growth_progress >= self.stage_requirements[self.current_stage]:
+                    self.current_stage += 1
+                    self.growth_progress = 0
+                    self.show_message(f"Tumbuh: {self.stages[self.current_stage]}!")
+            else:
+                if self.water_level < 10:
+                    self.show_message("Butuh air!")
+                elif self.sunlight_level < 10:
+                    self.show_message("Butuh cahaya!")
+                elif self.fertilizer_level < 10:
+                    self.show_message("Butuh pupuk!")
+        else:
+            self.water_level = max(0, self.water_level - dt * 0.5)
+            self.sunlight_level = max(0, self.sunlight_level - dt * 0.5)
+            self.fertilizer_level = max(0, self.fertilizer_level - dt * 0.5)
     
     def draw(self):
         """Render scene"""
         self.screen.blit(self.background, (0, 0))
         
+        self.draw_sky_elements()
         self.draw_soil()
         self.draw_plant()
+        self.draw_fertilizer_bag()
         
-        # Draw particles
         for particle in self.particles:
-            pygame.draw.circle(self.screen, particle['color'], 
-                             (int(particle['x']), int(particle['y'])), 
+            pygame.draw.circle(self.screen, particle['color'],
+                             (int(particle['x']), int(particle['y'])),
                              particle['size'])
         
         self.draw_ui()
