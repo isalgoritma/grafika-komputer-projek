@@ -3,8 +3,8 @@ import math
 import random
 import os
 
-class GrowthStroberi:
-    def _init_(self, screen, scene_manager):
+class GrowthApel:
+    def __init__(self, screen, scene_manager):
         self.screen = screen
         self.scene_manager = scene_manager
         self.width = screen.get_width()
@@ -31,14 +31,17 @@ class GrowthStroberi:
         # Warna
         self.SOIL_BROWN = (101, 67, 33)
         self.SOIL_DARK = (76, 50, 25)
+        self.TRUNK_BROWN = (101, 67, 33)
+        self.DARK_BROWN = (76, 50, 25)
         self.GREEN = (34, 139, 34)
         self.DARK_GREEN = (0, 100, 0)
         self.LEAF_GREEN = (50, 205, 50)
-        self.RED = (220, 20, 60)
-        self.LIGHT_RED = (255, 105, 180)
-        self.PINK = (255, 192, 203)
-        self.YELLOW = (255, 223, 0)
+        self.LIGHT_GREEN = (144, 238, 144)
+        self.RED_APPLE = (220, 20, 60)
+        self.LIGHT_RED = (255, 105, 97)
+        self.PINK = (255, 182, 193)
         self.WHITE = (255, 255, 255)
+        self.YELLOW = (255, 223, 0)
         self.BUTTON_GREEN = (126, 176, 105)
         self.WATER_BLUE = (135, 206, 250)
         self.CLOUD_WHITE = (240, 248, 255)
@@ -47,28 +50,27 @@ class GrowthStroberi:
         # Tahapan pertumbuhan
         self.stages = [
             "Biji",
-            "Kecambah", 
+            "Kecambah",
             "Daun Muda",
-            "Vegetatif",
             "Bunga",
             "Buah Muda",
             "Buah Matang",
-            "Siap Panen"
+            "Panen"
         ]
         
         self.current_stage = 0
         self.growth_progress = 0
-        self.stage_requirements = [15, 25, 35, 45, 55, 65, 75, 85]
+        self.stage_requirements = [20, 30, 40, 50, 60, 70, 80]
         
         # Faktor pertumbuhan
-        self.water_level = 30
-        self.sunlight_level = 30
-        self.fertilizer_level = 30
+        self.water_level = 40
+        self.sunlight_level = 40
+        self.fertilizer_level = 40
         
         # Kebutuhan per detik
-        self.water_consumption = 3
-        self.sunlight_consumption = 2.5
-        self.fertilizer_consumption = 2
+        self.water_consumption = 2.5
+        self.sunlight_consumption = 2
+        self.fertilizer_consumption = 1.5
         
         # Awan interaktif
         self.cloud = {
@@ -101,10 +103,9 @@ class GrowthStroberi:
         }
         
         # Harvest state
-        self.harvest_ready = False
-        self.harvest_button_hover = False
-        self.harvested_fruits = []  # For animation
         self.total_harvested = 0
+        self.harvested_apples = []
+        self.harvest_button_hover = False
         
         # Particle effects
         self.particles = []
@@ -120,7 +121,12 @@ class GrowthStroberi:
         
     def draw_rounded_rect(self, surface, color, rect, radius):
         """Menggambar persegi dengan sudut melengkung"""
-        pygame.draw.rect(surface, color, rect, border_radius=radius)
+        if len(color) == 4:
+            temp_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+            pygame.draw.rect(temp_surface, color, temp_surface.get_rect(), border_radius=radius)
+            surface.blit(temp_surface, (rect.x, rect.y))
+        else:
+            pygame.draw.rect(surface, color, rect, border_radius=radius)
     
     def draw_sky_elements(self):
         """Menggambar awan dan matahari"""
@@ -161,7 +167,6 @@ class GrowthStroberi:
         radius = self.sun['radius']
         
         # Cahaya glow
-        glow_intensity = int(self.sun['glow'])
         for i in range(3):
             glow_radius = radius + 20 - (i * 7)
             glow_alpha = 30 - (i * 10)
@@ -209,7 +214,7 @@ class GrowthStroberi:
         pygame.draw.rect(self.screen, self.SOIL_BROWN, 
                         (0, soil_y, self.width, 45))
         
-        # Tekstur tanah (batu-batu kecil)
+        # Tekstur tanah
         random.seed(42)
         for i in range(150):
             x = random.randint(0, self.width)
@@ -222,301 +227,282 @@ class GrowthStroberi:
         random.seed()
     
     def draw_seed(self, x, y):
-        """Menggambar biji dengan detail"""
-        pygame.draw.ellipse(self.screen, (60, 40, 20), (x - 20, y - 5, 40, 15))
-        pygame.draw.ellipse(self.screen, (101, 67, 33), (x - 12, y - 8, 24, 16))
-        pygame.draw.ellipse(self.screen, (139, 90, 43), (x - 10, y - 6, 20, 12))
-        pygame.draw.line(self.screen, (101, 67, 33), (x - 8, y), (x + 8, y), 2)
+        """Menggambar biji apel"""
+        # Biji berbentuk oval dengan detail
+        pygame.draw.ellipse(self.screen, (60, 40, 20), (x - 12, y - 8, 24, 16))
+        pygame.draw.ellipse(self.screen, (101, 67, 33), (x - 10, y - 6, 20, 12))
+        pygame.draw.ellipse(self.screen, (139, 90, 43), (x - 8, y - 5, 16, 10))
+        # Highlight
         pygame.draw.ellipse(self.screen, (160, 110, 60), (x - 6, y - 4, 8, 5))
     
     def draw_sprout(self, x, y):
         """Menggambar kecambah dengan akar"""
         sway = math.sin(self.plant_sway) * 2
         
+        # Akar
         for i in range(3):
-            offset = (i - 1) * 10
-            root_end_x = x + offset + random.randint(-3, 3)
-            root_end_y = y + 20 + random.randint(0, 10)
+            offset = (i - 1) * 8
+            root_end_x = x + offset + random.randint(-2, 2)
+            root_end_y = y + 15 + random.randint(0, 8)
             pygame.draw.line(self.screen, (139, 90, 43),
                            (x, y + 5), (root_end_x, root_end_y), 2)
         
-        pygame.draw.line(self.screen, (144, 238, 144), 
-                        (x, y), (x + int(sway), y - 35), 4)
+        # Batang
+        pygame.draw.line(self.screen, self.LIGHT_GREEN, 
+                        (x, y), (x + int(sway), y - 40), 5)
         
-        leaf_left = [(x + int(sway) - 15, y - 30), (x + int(sway) - 8, y - 35), (x + int(sway), y - 32)]
+        # Daun kecil (kotiledon)
+        leaf_left = [
+            (x + int(sway), y - 40),
+            (x + int(sway) - 12, y - 35),
+            (x + int(sway) - 8, y - 32),
+            (x + int(sway), y - 35)
+        ]
         pygame.draw.polygon(self.screen, self.LEAF_GREEN, leaf_left)
-        pygame.draw.line(self.screen, self.DARK_GREEN, (x + int(sway), y - 32), (x + int(sway) - 12, y - 31), 1)
         
-        leaf_right = [(x + int(sway) + 15, y - 30), (x + int(sway) + 8, y - 35), (x + int(sway), y - 32)]
+        leaf_right = [
+            (x + int(sway), y - 40),
+            (x + int(sway) + 12, y - 35),
+            (x + int(sway) + 8, y - 32),
+            (x + int(sway), y - 35)
+        ]
         pygame.draw.polygon(self.screen, self.LEAF_GREEN, leaf_right)
-        pygame.draw.line(self.screen, self.DARK_GREEN, (x + int(sway), y - 32), (x + int(sway) + 12, y - 31), 1)
     
-    def draw_young_leaves(self, x, y):
-        """Menggambar daun muda"""
-        sway = math.sin(self.plant_sway) * 3
-        pygame.draw.line(self.screen, self.GREEN, (x, y), (x + int(sway), y - 50), 6)
-        
-        for i in range(2):
-            leaf_y = y - 20 - (i * 15)
-            leaf_sway = sway * (1 - i * 0.2)
-            
-            for j in range(4):
-                lx = x + int(leaf_sway) - 25 + j * 5
-                ly = leaf_y - 5 + (j % 2) * 3
-                lx2 = x + int(leaf_sway) - 20 + j * 5
-                ly2 = leaf_y - 2 + ((j + 1) % 2) * 3
-                pygame.draw.line(self.screen, self.GREEN, (lx, ly), (lx2, ly2), 3)
-            
-            pygame.draw.ellipse(self.screen, self.LEAF_GREEN, (x + int(leaf_sway) - 28, leaf_y - 8, 30, 18))
-            pygame.draw.line(self.screen, self.DARK_GREEN, (x + int(leaf_sway), leaf_y), (x + int(leaf_sway) - 25, leaf_y), 2)
-            
-            for j in range(4):
-                rx = x + int(leaf_sway) + 25 - j * 5
-                ry = leaf_y - 5 + (j % 2) * 3
-                rx2 = x + int(leaf_sway) + 20 - j * 5
-                ry2 = leaf_y - 2 + ((j + 1) % 2) * 3
-                pygame.draw.line(self.screen, self.GREEN, (rx, ry), (rx2, ry2), 3)
-            
-            pygame.draw.ellipse(self.screen, self.LEAF_GREEN, (x + int(leaf_sway), leaf_y - 8, 30, 18))
-            pygame.draw.line(self.screen, self.DARK_GREEN, (x + int(leaf_sway), leaf_y), (x + int(leaf_sway) + 25, leaf_y), 2)
-    
-    def draw_vegetative(self, x, y):
-        """Menggambar fase vegetatif lengkap"""
-        sway = math.sin(self.plant_sway) * 4
-        pygame.draw.line(self.screen, self.DARK_GREEN, (x, y), (x + int(sway), y - 70), 8)
-        pygame.draw.line(self.screen, self.GREEN, (x, y), (x + int(sway), y - 70), 6)
-        
-        for i in range(6):
-            leaf_y = y - 15 - (i * 12)
-            leaf_x = x + int(sway * (1 - i * 0.1))
-            size_factor = 1 + i * 0.1
-            
-            self.draw_strawberry_leaf(leaf_x - 30 * size_factor, leaf_y, 35 * size_factor, -20 - i * 5)
-            self.draw_strawberry_leaf(leaf_x + 30 * size_factor, leaf_y, 35 * size_factor, 20 + i * 5)
-    
-    def draw_strawberry_leaf(self, x, y, size, angle):
-        """Menggambar daun stroberi dengan detail serrations"""
+    def draw_apple_leaf(self, x, y, size, angle):
+        """Menggambar daun apel dengan detail"""
         leaf_surf = pygame.Surface((int(size * 2), int(size * 2)), pygame.SRCALPHA)
         
-        points = []
-        for i in range(20):
-            a = (360 / 20) * i
-            rad = math.radians(a)
-            r = size * (0.8 if i % 2 == 0 else 1.0)
-            px = size + math.cos(rad) * r
-            py = size + math.sin(rad) * r * 0.7
-            points.append((px, py))
+        # Bentuk daun oval
+        pygame.draw.ellipse(leaf_surf, self.GREEN, (5, 0, size * 2 - 10, size * 2))
+        pygame.draw.ellipse(leaf_surf, self.LEAF_GREEN, (10, 5, size * 2 - 20, size * 2 - 10))
         
-        pygame.draw.polygon(leaf_surf, self.GREEN, points)
-        pygame.draw.polygon(leaf_surf, self.LEAF_GREEN, [(p[0] + 2, p[1] + 2) for p in points[:-5]])
+        # Urat daun
+        center_x = size
+        center_y = size
+        pygame.draw.line(leaf_surf, self.DARK_GREEN, 
+                        (center_x, 5), (center_x, size * 2 - 5), 2)
         
-        center = size
-        for i in range(5):
-            vein_angle = -60 + i * 30
-            vein_rad = math.radians(vein_angle)
-            vein_x = center + math.cos(vein_rad) * size * 0.8
-            vein_y = center + math.sin(vein_rad) * size * 0.6
-            pygame.draw.line(leaf_surf, self.DARK_GREEN, (center, center), (vein_x, vein_y), 2)
+        # Urat samping
+        for i in range(4):
+            offset_y = 10 + i * 12
+            pygame.draw.line(leaf_surf, self.DARK_GREEN,
+                           (center_x, offset_y),
+                           (center_x + 8, offset_y + 5), 1)
+            pygame.draw.line(leaf_surf, self.DARK_GREEN,
+                           (center_x, offset_y),
+                           (center_x - 8, offset_y + 5), 1)
         
         rotated = pygame.transform.rotate(leaf_surf, angle)
         rect = rotated.get_rect(center=(int(x), int(y)))
         self.screen.blit(rotated, rect)
     
-    def draw_flower(self, x, y):
-        """Menggambar bunga stroberi yang realistis"""
-        self.draw_vegetative(x, y)
+    def draw_young_leaves(self, x, y):
+        """Menggambar daun muda"""
+        sway = math.sin(self.plant_sway) * 3
         
-        sway = math.sin(self.plant_sway) * 4
-        flower_x = x + int(sway)
-        flower_y = y - 85
+        # Batang utama
+        pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 60), 8)
+        pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 60), 6)
         
-        pygame.draw.line(self.screen, self.GREEN, (x + int(sway), y - 70), (flower_x, flower_y + 5), 4)
-        
-        for i in range(5):
-            angle = (360 / 5) * i + self.flower_spin * 0.5
-            rad = math.radians(angle)
-            sepal_x = flower_x + math.cos(rad) * 18
-            sepal_y = flower_y + math.sin(rad) * 18
-            
-            sepal_points = [
-                (flower_x, flower_y),
-                (sepal_x, sepal_y),
-                (sepal_x + math.cos(rad + 0.3) * 8, sepal_y + math.sin(rad + 0.3) * 8)
-            ]
-            pygame.draw.polygon(self.screen, self.DARK_GREEN, sepal_points)
-        
-        for i in range(5):
-            angle = (360 / 5) * i + self.flower_spin
-            rad = math.radians(angle)
-            petal_x = flower_x + math.cos(rad) * 16
-            petal_y = flower_y + math.sin(rad) * 16
-            
-            pygame.draw.circle(self.screen, self.WHITE, (int(petal_x - 3), int(petal_y - 3)), 8)
-            pygame.draw.circle(self.screen, self.WHITE, (int(petal_x + 3), int(petal_y - 3)), 8)
-            pygame.draw.circle(self.screen, self.PINK, (int(petal_x), int(petal_y)), 7)
-        
-        pygame.draw.circle(self.screen, self.YELLOW, (flower_x, flower_y), 10)
-        pygame.draw.circle(self.screen, (255, 255, 150), (flower_x, flower_y), 7)
-        
-        for i in range(8):
-            angle = (360 / 8) * i
-            rad = math.radians(angle)
-            stamen_x = flower_x + math.cos(rad) * 5
-            stamen_y = flower_y + math.sin(rad) * 5
-            pygame.draw.circle(self.screen, (255, 200, 0), (int(stamen_x), int(stamen_y)), 2)
-    
-    def draw_young_fruit(self, x, y):
-        """Menggambar buah muda (hijau)"""
-        self.draw_vegetative(x, y - 10)
-        
-        sway = math.sin(self.plant_sway) * 4
-        fruit_x = x + int(sway)
-        fruit_y = y - 95
-        
-        pygame.draw.line(self.screen, self.GREEN, (fruit_x, y - 70), (fruit_x, fruit_y + 20), 4)
-        
-        for i in range(5):
-            angle = (360 / 5) * i - 90
-            rad = math.radians(angle)
-            leaf_x = fruit_x + math.cos(rad) * 14
-            leaf_y = fruit_y + 15 + math.sin(rad) * 14
-            
-            leaf_points = [
-                (fruit_x, fruit_y + 15),
-                (int(leaf_x), int(leaf_y)),
-                (fruit_x + int(math.cos(rad + 0.5) * 8), fruit_y + 15 + int(math.sin(rad + 0.5) * 8))
-            ]
-            pygame.draw.polygon(self.screen, self.DARK_GREEN, leaf_points)
-        
-        pygame.draw.circle(self.screen, (144, 238, 144), (fruit_x - 8, fruit_y + 20), 12)
-        pygame.draw.circle(self.screen, (144, 238, 144), (fruit_x + 8, fruit_y + 20), 12)
-        pygame.draw.polygon(self.screen, (144, 238, 144), [
-            (fruit_x - 15, fruit_y + 20),
-            (fruit_x, fruit_y + 42),
-            (fruit_x + 15, fruit_y + 20)
-        ])
-        
-        pygame.draw.circle(self.screen, (200, 255, 200), (fruit_x - 5, fruit_y + 18), 6)
-        
-        random.seed(42)
-        for i in range(15):
-            seed_x = fruit_x + random.randint(-12, 12)
-            seed_y = fruit_y + 20 + random.randint(-8, 20)
-            if -10 < seed_x - fruit_x < 10:
-                pygame.draw.circle(self.screen, (255, 255, 200), (seed_x, seed_y), 1)
-        random.seed()
-    
-    def draw_ripe_fruit(self, x, y):
-        """Menggambar buah matang (merah cerah)"""
-        self.draw_vegetative(x, y - 10)
-        
-        sway = math.sin(self.plant_sway) * 4
-        fruit_x = x + int(sway)
-        fruit_y = y - 95
-        
-        pygame.draw.line(self.screen, self.GREEN, (fruit_x, y - 70), (fruit_x, fruit_y + 20), 5)
-        
-        for i in range(6):
-            angle = (360 / 6) * i - 90
-            rad = math.radians(angle)
-            leaf_x = fruit_x + math.cos(rad) * 18
-            leaf_y = fruit_y + 15 + math.sin(rad) * 18
-            
-            leaf_points = [
-                (fruit_x, fruit_y + 15),
-                (int(leaf_x), int(leaf_y)),
-                (fruit_x + int(math.cos(rad + 0.5) * 10), fruit_y + 15 + int(math.sin(rad + 0.5) * 10))
-            ]
-            pygame.draw.polygon(self.screen, self.DARK_GREEN, leaf_points)
-            pygame.draw.polygon(self.screen, self.GREEN, [
-                (fruit_x, fruit_y + 15),
-                (int(leaf_x * 0.7 + fruit_x * 0.3), int(leaf_y * 0.7 + (fruit_y + 15) * 0.3)),
-                (fruit_x, fruit_y + 17)
-            ])
-        
-        pygame.draw.circle(self.screen, self.RED, (fruit_x - 10, fruit_y + 23), 16)
-        pygame.draw.circle(self.screen, self.RED, (fruit_x + 10, fruit_y + 23), 16)
-        pygame.draw.polygon(self.screen, self.RED, [
-            (fruit_x - 20, fruit_y + 23),
-            (fruit_x, fruit_y + 50),
-            (fruit_x + 20, fruit_y + 23)
-        ])
-        
-        pygame.draw.circle(self.screen, self.LIGHT_RED, (fruit_x - 6, fruit_y + 20), 10)
-        pygame.draw.circle(self.screen, (255, 255, 255), (fruit_x - 8, fruit_y + 18), 4)
-        
-        random.seed(42)
-        for i in range(25):
-            seed_x = fruit_x + random.randint(-15, 15)
-            seed_y = fruit_y + 20 + random.randint(-8, 28)
-            
-            dist_from_center = abs(seed_x - fruit_x)
-            if seed_y < fruit_y + 35:
-                if dist_from_center < 16:
-                    pygame.draw.ellipse(self.screen, self.YELLOW, (seed_x - 2, seed_y - 1, 4, 3))
-                    pygame.draw.ellipse(self.screen, (255, 255, 150), (seed_x - 1, seed_y, 2, 1))
-            else:
-                max_dist = 20 * (1 - (seed_y - fruit_y - 35) / 15)
-                if dist_from_center < max_dist:
-                    pygame.draw.ellipse(self.screen, self.YELLOW, (seed_x - 2, seed_y - 1, 4, 3))
-                    pygame.draw.ellipse(self.screen, (255, 255, 150), (seed_x - 1, seed_y, 2, 1))
-        random.seed()
-    
-    def draw_harvest_ready(self, x, y):
-        """Menggambar tanaman siap panen dengan beberapa buah"""
-        sway = math.sin(self.plant_sway) * 4
-        
-        pygame.draw.line(self.screen, self.DARK_GREEN, (x, y), (x + int(sway), y - 70), 8)
-        
-        for i in range(5):
+        # Daun-daun muda
+        for i in range(4):
             leaf_y = y - 15 - (i * 12)
-            leaf_x = x + int(sway * (1 - i * 0.1))
-            size_factor = 1 + i * 0.1
+            leaf_sway = sway * (1 - i * 0.15)
             
-            self.draw_strawberry_leaf(leaf_x - 30 * size_factor, leaf_y, 35 * size_factor, -20 - i * 5)
-            self.draw_strawberry_leaf(leaf_x + 30 * size_factor, leaf_y, 35 * size_factor, 20 + i * 5)
+            # Daun kiri
+            self.draw_apple_leaf(x + int(leaf_sway) - 25, leaf_y, 20, -30)
+            # Daun kanan
+            self.draw_apple_leaf(x + int(leaf_sway) + 25, leaf_y, 20, 30)
+    
+    def draw_flower(self, x, y):
+        """Menggambar pohon dengan bunga"""
+        sway = math.sin(self.plant_sway) * 4
         
-        # 3 buah stroberi matang yang bisa diklik
-        self.fruit_positions = [
-            (x + int(sway) - 40, y - 50),
-            (x + int(sway), y - 80),
-            (x + int(sway) + 35, y - 55)
+        # Batang
+        pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 90), 12)
+        pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 90), 8)
+        
+        # Cabang-cabang
+        branches = [
+            (y - 30, -35, 40),
+            (y - 50, 35, 45),
+            (y - 70, -30, 35)
         ]
         
-        for i, (fx, fy) in enumerate(self.fruit_positions):
-            # Skip jika sudah dipanen
-            if i in [f['id'] for f in self.harvested_fruits]:
-                continue
+        for branch_y, angle, length in branches:
+            rad = math.radians(angle)
+            end_x = x + int(sway) + int(math.cos(rad) * length)
+            end_y = branch_y + int(math.sin(rad) * length)
+            pygame.draw.line(self.screen, self.TRUNK_BROWN,
+                           (x + int(sway), branch_y),
+                           (end_x, end_y), 6)
+            
+            # Bunga di ujung cabang
+            for i in range(3):
+                flower_x = end_x + random.randint(-10, 10)
+                flower_y = end_y + random.randint(-10, 10)
                 
-            pygame.draw.line(self.screen, self.GREEN, (fx, fy - 5), (fx, fy + 10), 3)
+                # Kelopak bunga (5 kelopak)
+                for j in range(5):
+                    petal_angle = (360 / 5) * j + self.flower_spin * 0.5
+                    petal_rad = math.radians(petal_angle)
+                    petal_x = flower_x + math.cos(petal_rad) * 8
+                    petal_y = flower_y + math.sin(petal_rad) * 8
+                    pygame.draw.circle(self.screen, self.PINK, 
+                                     (int(petal_x), int(petal_y)), 5)
+                
+                # Pusat bunga
+                pygame.draw.circle(self.screen, self.YELLOW, (flower_x, flower_y), 4)
+                pygame.draw.circle(self.screen, (255, 255, 200), (flower_x, flower_y), 2)
+        
+        # Daun di batang utama
+        for i in range(5):
+            leaf_y = y - 20 - (i * 15)
+            self.draw_apple_leaf(x + int(sway) - 20, leaf_y, 22, -20 - i * 5)
+            self.draw_apple_leaf(x + int(sway) + 20, leaf_y, 22, 20 + i * 5)
+    
+    def draw_young_fruit(self, x, y):
+        """Menggambar pohon dengan buah muda (hijau kecil)"""
+        sway = math.sin(self.plant_sway) * 4
+        
+        # Batang
+        pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 100), 14)
+        pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 100), 10)
+        
+        # Cabang dengan buah
+        branches = [
+            (y - 35, -40, 50),
+            (y - 55, 40, 55),
+            (y - 75, -35, 45),
+            (y - 90, 30, 40)
+        ]
+        
+        for branch_y, angle, length in branches:
+            rad = math.radians(angle)
+            end_x = x + int(sway) + int(math.cos(rad) * length)
+            end_y = branch_y + int(math.sin(rad) * length)
+            pygame.draw.line(self.screen, self.TRUNK_BROWN,
+                           (x + int(sway), branch_y),
+                           (end_x, end_y), 7)
             
-            for j in range(5):
-                angle = (360 / 5) * j - 90
-                rad = math.radians(angle)
-                leaf_x = fx + math.cos(rad) * 12
-                leaf_y = fy + 10 + math.sin(rad) * 12
-                pygame.draw.polygon(self.screen, self.DARK_GREEN, [
-                    (fx, fy + 10),
-                    (int(leaf_x), int(leaf_y)),
-                    (fx, fy + 12)
-                ])
+            # Buah muda (hijau kecil)
+            fruit_x = end_x + random.randint(-8, 8)
+            fruit_y = end_y + 10
             
-            pygame.draw.circle(self.screen, self.RED, (fx - 7, fy + 15), 11)
-            pygame.draw.circle(self.screen, self.RED, (fx + 7, fy + 15), 11)
-            pygame.draw.polygon(self.screen, self.RED, [
-                (fx - 14, fy + 15),
-                (fx, fy + 35),
-                (fx + 14, fy + 15)
-            ])
+            # Tangkai buah
+            pygame.draw.line(self.screen, self.DARK_BROWN,
+                           (end_x, end_y), (fruit_x, fruit_y), 2)
             
-            pygame.draw.circle(self.screen, self.LIGHT_RED, (fx - 4, fy + 13), 6)
+            # Buah hijau kecil
+            pygame.draw.circle(self.screen, self.LIGHT_GREEN, (fruit_x, fruit_y), 10)
+            pygame.draw.circle(self.screen, (180, 255, 180), (fruit_x - 3, fruit_y - 3), 4)
+        
+        # Daun
+        for i in range(6):
+            leaf_y = y - 25 - (i * 13)
+            self.draw_apple_leaf(x + int(sway) - 22, leaf_y, 24, -25)
+            self.draw_apple_leaf(x + int(sway) + 22, leaf_y, 24, 25)
+    
+    def draw_ripe_fruit(self, x, y):
+        """Menggambar pohon dengan buah matang (merah)"""
+        sway = math.sin(self.plant_sway) * 4
+        
+        # Batang
+        pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 110), 16)
+        pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 110), 12)
+        
+        # Cabang dengan buah matang
+        self.apple_positions = []
+        branches = [
+            (y - 40, -42, 55),
+            (y - 60, 42, 60),
+            (y - 80, -38, 50),
+            (y - 95, 35, 45)
+        ]
+        
+        for idx, (branch_y, angle, length) in enumerate(branches):
+            rad = math.radians(angle)
+            end_x = x + int(sway) + int(math.cos(rad) * length)
+            end_y = branch_y + int(math.sin(rad) * length)
+            pygame.draw.line(self.screen, self.TRUNK_BROWN,
+                           (x + int(sway), branch_y),
+                           (end_x, end_y), 8)
             
-            random.seed(42 + int(fx))
-            for j in range(15):
-                sx = fx + random.randint(-10, 10)
-                sy = fy + 15 + random.randint(-5, 18)
-                pygame.draw.circle(self.screen, self.YELLOW, (sx, sy), 1)
-            random.seed()
+            # Buah matang (merah)
+            fruit_x = end_x + random.randint(-10, 10)
+            fruit_y = end_y + 12
+            
+            self.apple_positions.append((fruit_x, fruit_y))
+            
+            # Tangkai buah
+            pygame.draw.line(self.screen, self.DARK_BROWN,
+                           (end_x, end_y), (fruit_x, fruit_y - 14), 3)
+            
+            # Apel merah
+            pygame.draw.circle(self.screen, self.RED_APPLE, (fruit_x, fruit_y), 14)
+            pygame.draw.circle(self.screen, self.LIGHT_RED, (fruit_x - 4, fruit_y - 4), 6)
+            pygame.draw.circle(self.screen, (255, 255, 255), (fruit_x - 5, fruit_y - 5), 3)
+        
+        # Daun lebat
+        for i in range(8):
+            leaf_y = y - 30 - (i * 11)
+            self.draw_apple_leaf(x + int(sway) - 25, leaf_y, 26, -30 + i * 3)
+            self.draw_apple_leaf(x + int(sway) + 25, leaf_y, 26, 30 - i * 3)
+    
+    def draw_harvest_ready(self, x, y):
+        """Menggambar pohon siap panen"""
+        sway = math.sin(self.plant_sway) * 4
+        
+        # Batang besar
+        pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 120), 18)
+        pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 120), 14)
+        
+        # Cabang dengan apel siap panen
+        self.apple_positions = []
+        branches = [
+            (y - 45, -45, 60),
+            (y - 65, 45, 65),
+            (y - 85, -40, 55),
+            (y - 100, 38, 50),
+            (y - 115, -30, 45)
+        ]
+        
+        for idx, (branch_y, angle, length) in enumerate(branches):
+            rad = math.radians(angle)
+            end_x = x + int(sway) + int(math.cos(rad) * length)
+            end_y = branch_y + int(math.sin(rad) * length)
+            pygame.draw.line(self.screen, self.TRUNK_BROWN,
+                           (x + int(sway), branch_y),
+                           (end_x, end_y), 9)
+            
+            # Apel siap dipanen
+            fruit_x = end_x + random.randint(-12, 12)
+            fruit_y = end_y + 15
+            
+            # Skip jika sudah dipanen
+            if idx in [a['id'] for a in self.harvested_apples]:
+                continue
+            
+            self.apple_positions.append((fruit_x, fruit_y, idx))
+            
+            # Tangkai
+            pygame.draw.line(self.screen, self.DARK_BROWN,
+                           (end_x, end_y), (fruit_x, fruit_y - 16), 3)
+            
+            # Apel merah mengkilap
+            pygame.draw.circle(self.screen, self.RED_APPLE, (fruit_x, fruit_y), 16)
+            pygame.draw.circle(self.screen, self.LIGHT_RED, (fruit_x - 5, fruit_y - 5), 7)
+            pygame.draw.circle(self.screen, (255, 255, 255), (fruit_x - 6, fruit_y - 6), 4)
+            
+            # Daun kecil di tangkai
+            pygame.draw.ellipse(self.screen, self.GREEN, 
+                              (fruit_x - 8, fruit_y - 18, 10, 6))
+        
+        # Daun lebat dan hijau
+        for i in range(10):
+            leaf_y = y - 35 - (i * 10)
+            self.draw_apple_leaf(x + int(sway) - 28, leaf_y, 28, -35 + i * 4)
+            self.draw_apple_leaf(x + int(sway) + 28, leaf_y, 28, 35 - i * 4)
     
     def draw_plant(self):
         """Menggambar tanaman sesuai tahap"""
@@ -530,14 +516,12 @@ class GrowthStroberi:
         elif self.current_stage == 2:
             self.draw_young_leaves(center_x, soil_y)
         elif self.current_stage == 3:
-            self.draw_vegetative(center_x, soil_y)
-        elif self.current_stage == 4:
             self.draw_flower(center_x, soil_y)
-        elif self.current_stage == 5:
+        elif self.current_stage == 4:
             self.draw_young_fruit(center_x, soil_y)
-        elif self.current_stage == 6:
+        elif self.current_stage == 5:
             self.draw_ripe_fruit(center_x, soil_y)
-        elif self.current_stage == 7:
+        elif self.current_stage == 6:
             self.draw_harvest_ready(center_x, soil_y)
     
     def draw_fertilizer_bag(self):
@@ -547,17 +531,21 @@ class GrowthStroberi:
         w = self.fertilizer_bag['width']
         h = self.fertilizer_bag['height']
         
+        # Bayangan
         pygame.draw.rect(self.screen, (50, 50, 50), (x + 5, y + 5, w, h), border_radius=10)
         
+        # Kantong
         color = (160, 82, 45) if not self.fertilizer_bag['hover'] else (139, 69, 19)
         pygame.draw.rect(self.screen, color, (x, y, w, h), border_radius=10)
         pygame.draw.rect(self.screen, (101, 67, 33), (x, y, w, h), 3, border_radius=10)
         
+        # Label
         pygame.draw.rect(self.screen, (222, 184, 135), (x + 10, y + 20, w - 20, h - 40), border_radius=5)
         
         text = self.font_small.render("PUPUK", True, (101, 67, 33))
         self.screen.blit(text, (x + w // 2 - text.get_width() // 2, y + 35))
         
+        # Partikel pupuk
         for particle in self.fertilizer_bag['particles']:
             pygame.draw.circle(self.screen, (139, 90, 43),
                              (int(particle['x']), int(particle['y'])), 
@@ -576,6 +564,7 @@ class GrowthStroberi:
         
         pygame.draw.rect(self.screen, self.WHITE, progress_bg, 2, border_radius=12)
         
+        # Stage name
         stage_text = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
         self.screen.blit(stage_text, (self.width // 2 - stage_text.get_width() // 2, 55))
         
@@ -613,19 +602,19 @@ class GrowthStroberi:
             pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
             self.screen.blit(pct_text, (bar_x + 150 + bar_width + 10, y + 2))
         
-        # Harvest button (hanya muncul saat siap panen)
-        if self.current_stage == 7 and self.total_harvested < 3:
+        # Harvest button (hanya muncul saat stage panen)
+        if self.current_stage == 6 and self.total_harvested < 5:
             harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
             btn_color = (255, 140, 0) if self.harvest_button_hover else (255, 165, 0)
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
             pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
             
-            harvest_text = self.font_button.render("🍓 PANEN!", True, self.WHITE)
+            harvest_text = self.font_button.render("🍎 PANEN!", True, self.WHITE)
             self.screen.blit(harvest_text, 
                            (self.width // 2 - harvest_text.get_width() // 2, 
                             self.height - 165))
             
-            count_text = self.font_small.render(f"{self.total_harvested}/3 buah", True, self.WHITE)
+            count_text = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
             self.screen.blit(count_text,
                            (self.width // 2 - count_text.get_width() // 2,
                             self.height - 135))
@@ -655,57 +644,65 @@ class GrowthStroberi:
         self.message = message
         self.message_timer = 2.0
     
-    def harvest_fruit(self, mouse_pos):
-        """Panen buah yang diklik"""
-        if self.current_stage != 7:
+    def harvest_apple(self, mouse_pos):
+        """Panen apel yang diklik"""
+        if self.current_stage != 6:
             return
         
-        for i, (fx, fy) in enumerate(self.fruit_positions):
+        if not hasattr(self, 'apple_positions'):
+            return
+        
+        for fx, fy, apple_id in self.apple_positions:
             # Skip jika sudah dipanen
-            if i in [f['id'] for f in self.harvested_fruits]:
+            if apple_id in [a['id'] for a in self.harvested_apples]:
                 continue
             
-            # Cek jarak klik dengan buah
-            dist = math.sqrt((mouse_pos[0] - fx)*2 + (mouse_pos[1] - fy)*2)
-            if dist < 30:
+            # Cek jarak klik dengan apel
+            dist = math.sqrt((mouse_pos[0] - fx)**2 + (mouse_pos[1] - fy)**2)
+            if dist < 20:
                 # Animasi panen
-                self.harvested_fruits.append({
-                    'id': i,
+                self.harvested_apples.append({
+                    'id': apple_id,
                     'x': fx,
                     'y': fy,
                     'vx': random.uniform(-5, 5),
-                    'vy': random.uniform(-15, -10),
+                    'vy': random.uniform(-12, -8),
                     'rotation': 0,
-                    'rot_speed': random.uniform(-10, 10)
+                    'rot_speed': random.uniform(-8, 8)
                 })
                 self.total_harvested += 1
-                self.show_message(f"Buah dipanen! {self.total_harvested}/3")
+                self.show_message(f"Apel dipanen! {self.total_harvested}/5")
                 
                 # Particle effect
-                for _ in range(20):
+                for _ in range(15):
                     self.particles.append({
                         'x': fx,
                         'y': fy,
-                        'vx': random.uniform(-4, 4),
-                        'vy': random.uniform(-6, -2),
+                        'vx': random.uniform(-3, 3),
+                        'vy': random.uniform(-5, -2),
                         'life': 1.0,
-                        'color': self.RED,
+                        'color': self.RED_APPLE,
                         'size': random.randint(2, 5)
                     })
                 
-                # Cek apakah semua buah sudah dipanen
-                if self.total_harvested >= 3:
-                    pygame.time.set_timer(pygame.USEREVENT + 1, 1500)  # Timer untuk pindah scene
-                    self.show_message("Selamat! Semua buah terpanen!")
+                # Cek apakah semua apel sudah dipanen
+                if self.total_harvested >= 5:
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 1500)
+                    self.show_message("Selamat! Semua apel terpanen!")
                 
                 break
     
     def handle_event(self, event):
         """Handle input events"""
+        # Timer untuk pindah ke halaman apresiasi
         if event.type == pygame.USEREVENT + 1:
             # Pindah ke halaman apresiasi dengan parameter plant_type
-            self.scene_manager.change_scene("apresiasi", plant_type="strawberry")
-            pygame.time.set_timer(pygame.USEREVENT + 1, 0)    
+            self.scene_manager.change_scene("apresiasi", plant_type="apel")
+            pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # Stop timer
+            return
+        
+        if event.type == pygame.MOUSEMOTION:
+            mouse_pos = pygame.mouse.get_pos()
             
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
@@ -716,7 +713,7 @@ class GrowthStroberi:
             self.fertilizer_bag['hover'] = bag_rect.collidepoint(mouse_pos)
             
             # Harvest button hover
-            if self.current_stage == 7 and self.total_harvested < 3:
+            if self.current_stage == 6 and self.total_harvested < 5:
                 harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
                 self.harvest_button_hover = harvest_btn.collidepoint(mouse_pos)
             
@@ -724,13 +721,14 @@ class GrowthStroberi:
                 self.cloud['x'] = mouse_pos[0] - self.cloud['width'] // 2
                 self.cloud['x'] = max(50, min(self.width - 200, self.cloud['x']))
         
-        elif event.type == pygame.MOUSEMOTION:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             
-            # Cek klik buah untuk panen
-            if self.current_stage == 7:
-                self.harvest_fruit(mouse_pos)
+            # Cek klik apel untuk panen
+            if self.current_stage == 6:
+                self.harvest_apple(mouse_pos)
             
+            # Cloud (hujan)
             cloud_rect = pygame.Rect(
                 self.cloud['x'], self.cloud['y'],
                 self.cloud['width'], self.cloud['height']
@@ -739,6 +737,7 @@ class GrowthStroberi:
                 self.cloud['dragging'] = True
                 self.cloud['raining'] = True
             
+            # Sun (cahaya)
             sun_dist = math.sqrt((mouse_pos[0] - self.sun['x'])**2 + 
                                (mouse_pos[1] - self.sun['y'])**2)
             if sun_dist < self.sun['radius'] + 30:
@@ -746,6 +745,7 @@ class GrowthStroberi:
                 self.show_message("Cahaya matahari +25%!")
                 self.sun['glow'] = 50
             
+            # Fertilizer bag
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
                 self.fertilizer_bag['y'],
@@ -766,6 +766,7 @@ class GrowthStroberi:
                         'size': random.randint(2, 4)
                     })
             
+            # Back button
             back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
             if back_button.collidepoint(mouse_pos):
                 self.scene_manager.change_scene("pilih_buah")
@@ -830,16 +831,15 @@ class GrowthStroberi:
             if particle['life'] <= 0:
                 self.fertilizer_bag['particles'].remove(particle)
         
-        # Update harvested fruits animation
-        for fruit in self.harvested_fruits[:]:
-            fruit['x'] += fruit['vx']
-            fruit['y'] += fruit['vy']
-            fruit['vy'] += 0.5  # Gravity
-            fruit['rotation'] += fruit['rot_speed']
+        # Update harvested apples animation
+        for apple in self.harvested_apples[:]:
+            apple['x'] += apple['vx']
+            apple['y'] += apple['vy']
+            apple['vy'] += 0.5
+            apple['rotation'] += apple['rot_speed']
             
-            # Remove jika keluar layar
-            if fruit['y'] > self.height + 50:
-                self.harvested_fruits.remove(fruit)
+            if apple['y'] > self.height + 50:
+                self.harvested_apples.remove(apple)
         
         if self.sun['glow'] > 0:
             self.sun['glow'] = max(0, self.sun['glow'] - dt * 50)
@@ -850,7 +850,7 @@ class GrowthStroberi:
                 self.sunlight_level > 20 and 
                 self.fertilizer_level > 20):
                 
-                growth_rate = 5
+                growth_rate = 4
                 self.growth_progress += growth_rate * dt
                 
                 self.water_level = max(0, self.water_level - self.water_consumption * dt)
@@ -882,20 +882,19 @@ class GrowthStroberi:
         self.draw_plant()
         self.draw_fertilizer_bag()
         
-        # Draw harvested fruits (animasi jatuh)
-        for fruit in self.harvested_fruits:
-            fx, fy = int(fruit['x']), int(fruit['y'])
+        # Draw harvested apples (animasi jatuh)
+        for apple in self.harvested_apples:
+            ax, ay = int(apple['x']), int(apple['y'])
             
-            # Gambar buah yang jatuh dengan rotasi
-            fruit_surf = pygame.Surface((40, 60), pygame.SRCALPHA)
-            pygame.draw.circle(fruit_surf, self.RED, (13, 20), 11)
-            pygame.draw.circle(fruit_surf, self.RED, (27, 20), 11)
-            pygame.draw.polygon(fruit_surf, self.RED, [(6, 20), (20, 47), (34, 20)])
+            apple_surf = pygame.Surface((40, 40), pygame.SRCALPHA)
+            pygame.draw.circle(apple_surf, self.RED_APPLE, (20, 20), 16)
+            pygame.draw.circle(apple_surf, self.LIGHT_RED, (15, 15), 7)
             
-            rotated = pygame.transform.rotate(fruit_surf, fruit['rotation'])
-            rect = rotated.get_rect(center=(fx, fy))
+            rotated = pygame.transform.rotate(apple_surf, apple['rotation'])
+            rect = rotated.get_rect(center=(ax, ay))
             self.screen.blit(rotated, rect)
         
+        # Draw particles
         for particle in self.particles:
             pygame.draw.circle(self.screen, particle['color'],
                              (int(particle['x']), int(particle['y'])),

@@ -1,11 +1,14 @@
 import pygame
 import sys
 # from scenes.homepage import Homepage
-from scenes.pilih_kategori import PilihKategori
+# from scenes.pilih_kategori import PilihKategori
 from scenes.pilih_buah import PilihBuah
 from scenes.pilih_sayur import PilihSayur
 from scenes.strawberry import GrowthStroberi
 from scenes.bayam import GrowthBayam
+from scenes.apel import GrowthApel
+from scenes.seledri import GrowthSeledri
+from scenes.apresiasi import Apresiasi
 
 class SceneManager:
     """Manager untuk mengelola perpindahan scene"""
@@ -49,15 +52,18 @@ def main():
     
     # Register semua scene
     # scene_manager.register_scene("homepage", Homepage)
-    scene_manager.register_scene("pilih_kategori", PilihKategori)
+    # scene_manager.register_scene("pilih_kategori", PilihKategori)
     scene_manager.register_scene("pilih_buah", PilihBuah)
     scene_manager.register_scene("pilih_sayur", PilihSayur)
     scene_manager.register_scene("strawberry", GrowthStroberi)
     scene_manager.register_scene("bayam", GrowthBayam)
-    
+    scene_manager.register_scene("apel", GrowthApel)
+    scene_manager.register_scene("seledri", GrowthSeledri)
+    scene_manager.register_scene("apresiasi", Apresiasi)
+
     # Mulai dari homepage
     # scene_manager.change_scene("homepage")
-    scene_manager.change_scene("pilih_kategori")
+    scene_manager.change_scene("pilih_sayur")
     
     running = True
     

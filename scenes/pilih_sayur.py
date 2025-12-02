@@ -48,7 +48,7 @@ class PilihSayur:
             {
                 'name': 'SELEDRI',
                 'color': (120, 160, 90),
-                'scene': 'growth_seledri',
+                'scene': 'seledri',
                 'pos': [700, 150],
                 'target_pos': [700, 150],
                 'scale': 1.0,

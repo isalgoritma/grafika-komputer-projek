@@ -47,7 +47,7 @@ class PilihBuah:
             {
                 'name': 'APEL',
                 'color': (200, 80, 80),
-                'scene': 'growth_apel',
+                'scene': 'apel',
                 'pos': [700, 150],
                 'target_pos': [700, 150],
                 'scale': 1.0,
