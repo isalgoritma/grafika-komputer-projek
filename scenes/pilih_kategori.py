@@ -9,22 +9,13 @@ WIDTH, HEIGHT = 1000, 650
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pilih Kategori - Bloomio")
 
-# ============================
-# BACKGROUND
-# ============================
 background = pygame.image.load("assets/images/bg-kategori.png").convert()
 background = pygame.transform.smoothscale(background, (WIDTH, HEIGHT))
 
-# ============================
-# FONTS
-# ============================
 font_level = pygame.font.Font("assets/fonts/Heyam.ttf", 38)
 font_title = pygame.font.Font("assets/fonts/Heyam.ttf", 78)
 font_button = pygame.font.Font("assets/fonts/Heyam.ttf", 40)
 
-# ============================
-# CREATE CARD (FINAL FIT FIGMA)
-# ============================
 def create_card(level_number, title_text, y_pos):
     CARD_W, CARD_H = 520, 200   # ukuran figma
     card = pygame.Surface((CARD_W, CARD_H), pygame.SRCALPHA)
@@ -60,16 +51,9 @@ def create_card(level_number, title_text, y_pos):
 
     return card, rect, btn_rect
 
-
-# ============================
-# CREATE BOTH CARDS
-# ============================
 card_sayur, rect_sayur, btn_sayur = create_card(1, "SAYUR", 250)
 card_buah, rect_buah, btn_buah = create_card(2, "BUAH", 460)
 
-# ============================
-# GAME LOOP
-# ============================
 running = True
 while running:
     for e in pygame.event.get():
