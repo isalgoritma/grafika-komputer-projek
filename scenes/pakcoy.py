@@ -16,17 +16,22 @@ class GrowthPakcoy:
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
         
         # Load font
-        font_path = os.path.join('assets', 'fonts', 'Heyam.ttf')
+        font_path = os.path.join("assets", "fonts", "Heyam.ttf")
+        digits_path = os.path.join("assets", "fonts", "Joyful.ttf")
         try:
             self.font_title = pygame.font.Font(font_path, 60)
             self.font_stage = pygame.font.Font(font_path, 40)
             self.font_button = pygame.font.Font(font_path, 30)
             self.font_small = pygame.font.Font(font_path, 24)
+            self.font_digits = pygame.font.Font(digits_path, 28)
+            self.font_message = pygame.font.Font(digits_path, 30)
         except:
             self.font_title = pygame.font.Font(None, 60)
             self.font_stage = pygame.font.Font(None, 40)
             self.font_button = pygame.font.Font(None, 30)
             self.font_small = pygame.font.Font(None, 24)
+            self.font_digits = pygame.font.Font(digits_path, 28)
+            self.font_message = pygame.font.Font(digits_path, 30)
         
         # Warna realistis untuk pakcoy
         self.SOIL_BROWN = (101, 67, 33)
@@ -47,8 +52,8 @@ class GrowthPakcoy:
         self.stages = [
             "Biji",
             "Kecambah",
-            "2 Daun Sejati",
-            "4-6 Daun",
+            "Daun Sejati",
+            "Daun",
             "Vegetatif Penuh",
             "Siap Panen"
         ]
@@ -565,54 +570,47 @@ class GrowthPakcoy:
                              particle['size'])
     
     def draw_ui(self):
-        """Menggambar UI dan progress bars"""
-        # Progress bar
-        progress_bg = pygame.Rect(self.width // 2 - 200, 20, 400, 25)
-        self.draw_rounded_rect(self.screen, (50, 50, 50), progress_bg, 12)
-        
-        if self.current_stage < len(self.stages) - 1:
-            progress_width = int((self.growth_progress / self.stage_requirements[self.current_stage]) * 380)
-            progress_fill = pygame.Rect(self.width // 2 - 190, 25, progress_width, 15)
-            pygame.draw.rect(self.screen, (144, 238, 144), progress_fill, border_radius=8)
-        
-        pygame.draw.rect(self.screen, self.WHITE, progress_bg, 2, border_radius=12)
-        
-        stage_text = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
-        self.screen.blit(stage_text, (self.width // 2 - stage_text.get_width() // 2, 55))
-        
-        # Level bars
+        bg = pygame.Rect(self.width//2-200, 20, 400, 25)
+        pygame.draw.rect(self.screen, (40,40,40), bg, border_radius=12)
+
+        if self.current_stage < len(self.stages)-1:
+            req = self.stage_requirements[self.current_stage]
+            pw = int((self.growth_progress / req) * 380)
+            pygame.draw.rect(self.screen, (80,220,90),
+                             (self.width//2-190, 25, pw, 15), border_radius=8)
+
+        pygame.draw.rect(self.screen, self.WHITE, bg, 2, border_radius=12)
+
+        txt = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
+        self.screen.blit(txt, (self.width//2 - txt.get_width()//2, 55))
+
         bar_x = 30
         bar_y = 120
-        bar_width = 200
-        bar_height = 25
-        bar_spacing = 45
-        
-        levels = [
-            ('💧 Air', self.water_level, self.WATER_BLUE),
-            ('☀ Cahaya', self.sunlight_level, self.YELLOW),
-            ('🌱 Pupuk', self.fertilizer_level, self.PAKCOY_GREEN)
+        bar_w = 200
+
+        items = [
+            ("Air", self.water_level, self.WATER_BLUE),
+            ("Cahaya", self.sunlight_level, (255,230,90)),
+            ("Pupuk", self.fertilizer_level, (80,200,120)),
         ]
-        
-        for i, (label, level, color) in enumerate(levels):
-            y = bar_y + (i * bar_spacing)
-            
-            label_text = self.font_button.render(label, True, self.WHITE)
-            label_bg = pygame.Rect(bar_x - 5, y - 8, label_text.get_width() + 10, 35)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 150), label_bg, 8)
-            self.screen.blit(label_text, (bar_x, y))
-            
-            bar_bg = pygame.Rect(bar_x + 150, y, bar_width, bar_height)
-            pygame.draw.rect(self.screen, (50, 50, 50), bar_bg, border_radius=12)
-            
-            fill_width = int((level / 100) * bar_width)
-            if fill_width > 0:
-                bar_fill = pygame.Rect(bar_x + 150, y, fill_width, bar_height)
-                pygame.draw.rect(self.screen, color, bar_fill, border_radius=12)
-            
-            pygame.draw.rect(self.screen, self.WHITE, bar_bg, 2, border_radius=12)
-            
-            pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
-            self.screen.blit(pct_text, (bar_x + 150 + bar_width + 10, y + 2))
+
+        for i,(name,val,col) in enumerate(items):
+            y = bar_y + i*45
+
+            lb = self.font_button.render(name, True, self.WHITE)
+            self.screen.blit(lb, (bar_x, y-5))
+
+            pygame.draw.rect(self.screen, (50,50,50),
+                             (bar_x+120, y, bar_w, 25), border_radius=12)
+            pygame.draw.rect(self.screen, self.WHITE,
+                             (bar_x+120, y, bar_w, 25), 2, border_radius=12)
+
+            fw = int((val/100) * bar_w)
+            pygame.draw.rect(self.screen, col,
+                             (bar_x+120, y, fw, 25), border_radius=12)
+
+            pct = self.font_digits.render(f"{int(val)}%", True, self.WHITE)
+            self.screen.blit(pct, (bar_x+120+bar_w+10, y))
         
         # Harvest button (hanya muncul saat siap panen)
         if self.current_stage == 5 and not self.harvest_complete:
@@ -621,34 +619,32 @@ class GrowthPakcoy:
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
             pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
             
-            harvest_text = self.font_button.render("🥬 PANEN!", True, self.WHITE)
+            harvest_text = self.font_message.render("PANEN!", True, self.WHITE)
             self.screen.blit(harvest_text, 
                            (self.width // 2 - harvest_text.get_width() // 2, 
                             self.height - 165))
             
-            weight_text = self.font_small.render("~200-300g", True, self.WHITE)
+            weight_text = self.font_message.render("~200-300g", True, self.WHITE)
             self.screen.blit(weight_text,
                            (self.width // 2 - weight_text.get_width() // 2,
                             self.height - 135))
         
         # Message
+        # Message
         if self.message_timer > 0:
-            msg_text = self.font_button.render(self.message, True, self.WHITE)
-            msg_bg = pygame.Rect(self.width // 2 - msg_text.get_width() // 2 - 20,
-                                self.height // 2 - 50, 
-                                msg_text.get_width() + 40, 60)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 200), msg_bg, 15)
+            msg_text = self.font_message.render(self.message, True, self.WHITE)
+            # Background hitam dihapus
             self.screen.blit(msg_text, 
-                           (self.width // 2 - msg_text.get_width() // 2, 
+                        (self.width // 2 - msg_text.get_width() // 2, 
                             self.height // 2 - 35))
-        
+                
         # Back button
         back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
         color = self.BUTTON_GREEN if not back_button.collidepoint(pygame.mouse.get_pos()) else (150, 200, 130)
         self.draw_rounded_rect(self.screen, color, back_button, 12)
         pygame.draw.rect(self.screen, self.WHITE, back_button, 2, border_radius=12)
         
-        back_text = self.font_button.render("← Kembali", True, self.WHITE)
+        back_text = self.font_digits.render("← Kembali", True, self.WHITE)
         self.screen.blit(back_text, (self.width - 90 - back_text.get_width() // 2, self.height - 57))
     
     def show_message(self, message):
