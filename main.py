@@ -8,6 +8,9 @@ from scenes.strawberry import GrowthStroberi
 from scenes.bayam import GrowthBayam
 from scenes.apel import GrowthApel
 from scenes.seledri import GrowthSeledri
+from scenes.melon import GrowthMelon
+from scenes.selada import GrowthLettuce
+from scenes.pakcoy import GrowthPakcoy
 from scenes.apresiasi import Apresiasi
 
 class SceneManager:
@@ -59,6 +62,9 @@ def main():
     scene_manager.register_scene("bayam", GrowthBayam)
     scene_manager.register_scene("apel", GrowthApel)
     scene_manager.register_scene("seledri", GrowthSeledri)
+    scene_manager.register_scene("melon", GrowthMelon)
+    scene_manager.register_scene("selada", GrowthLettuce)
+    scene_manager.register_scene("pakcoy", GrowthPakcoy)
     scene_manager.register_scene("apresiasi", Apresiasi)
 
     # Mulai dari homepage
