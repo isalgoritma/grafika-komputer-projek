@@ -11,7 +11,7 @@ class GrowthLettuce:
         self.height = screen.get_height()
 
         # Background
-        bg_path = os.path.join("assets", "images", "bg-buah.png")
+        bg_path = os.path.join("assets", "images", "bg-select.png")
         self.background = pygame.image.load(bg_path)
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
