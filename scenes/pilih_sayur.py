@@ -40,9 +40,9 @@ class PilihSayur:
         # Data kartu
         self.cards = [
             {
-                'name': 'BAYAM',
+                'name': 'PAKCOY',
                 'color': (100, 150, 100),
-                'scene': 'bayam',
+                'scene': 'pakcoy',
                 'pos': [100, 150],
                 'target_pos': [100, 150],
                 'scale': 1.0,
