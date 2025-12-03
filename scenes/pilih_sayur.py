@@ -64,7 +64,7 @@ class PilihSayur:
             {
                 'name': 'SELADA',
                 'color': (130, 180, 100),
-                'scene': 'growth_selada',
+                'scene': 'selada',
                 'pos': [400, 450],
                 'target_pos': [400, 450],
                 'scale': 1.0,
