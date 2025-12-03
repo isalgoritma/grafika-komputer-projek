@@ -60,7 +60,7 @@ class PilihBuah:
             {
                 'name': 'MELON',
                 'color': (150, 180, 100),
-                'scene': 'growth_melon',
+                'scene': 'melon',
                 'pos': [400, 450],
                 'target_pos': [400, 450],
                 'scale': 1.0,

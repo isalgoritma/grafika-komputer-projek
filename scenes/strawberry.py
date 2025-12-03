@@ -4,7 +4,7 @@ import random
 import os
 
 class GrowthStroberi:
-    def _init_(self, screen, scene_manager):
+    def __init__(self, screen, scene_manager):
         self.screen = screen
         self.scene_manager = scene_manager
         self.width = screen.get_width()
@@ -23,12 +23,15 @@ class GrowthStroberi:
             self.font_stage = pygame.font.Font(font_path, 40)
             self.font_button = pygame.font.Font(font_path, 30)
             self.font_small = pygame.font.Font(font_path, 24)
-
+            self.font_digits = pygame.font.Font(digits_path, 28)
+            self.font_message = pygame.font.Font(digits_path, 30)
         except:
             self.font_title = pygame.font.Font(None, 60)
             self.font_stage = pygame.font.Font(None, 40)
             self.font_button = pygame.font.Font(None, 30)
             self.font_small = pygame.font.Font(None, 24)
+            self.font_digits = pygame.font.Font(digits_path, 28)
+            self.font_message = pygame.font.Font(digits_path, 30)
         
         # Warna
         self.SOIL_BROWN = (101, 67, 33)
@@ -105,7 +108,8 @@ class GrowthStroberi:
         # Harvest state
         self.harvest_ready = False
         self.harvest_button_hover = False
-        self.harvested_fruits = []  # For animation
+        self.harvest_complete = False  # TAMBAHKAN INI
+        self.harvested_fruits = []
         self.total_harvested = 0
         
         # Particle effects
@@ -465,9 +469,27 @@ class GrowthStroberi:
         random.seed()
     
     def draw_harvest_ready(self, x, y):
-        """Menggambar tanaman siap panen dengan beberapa buah"""
-        sway = math.sin(self.plant_sway) * 4
+        """Menggambar tanaman siap panen"""
+        if self.harvest_complete:
+            # Tampilan setelah dipanen
+            sway = math.sin(self.plant_sway) * 2
+            pygame.draw.line(self.screen, self.DARK_GREEN, (x, y), (x + int(sway), y - 40), 6)
+            
+            # Beberapa daun kecil tersisa
+            for i in range(2):
+                leaf_y = y - 15 - (i * 12)
+                leaf_x = x + int(sway * (1 - i * 0.1))
+                self.draw_strawberry_leaf(leaf_x - 20, leaf_y, 20, -15)
+                self.draw_strawberry_leaf(leaf_x + 20, leaf_y, 20, 15)
+            
+            # Teks "Terpanen!"
+            harvest_text = self.font_button.render("Terpanen!", True, self.DARK_GREEN)
+            self.screen.blit(harvest_text, 
+                        (x - harvest_text.get_width() // 2, y - 80))
+            return
         
+        # Tanaman penuh dengan 3 buah matang
+        sway = math.sin(self.plant_sway) * 4
         pygame.draw.line(self.screen, self.DARK_GREEN, (x, y), (x + int(sway), y - 70), 8)
         
         for i in range(5):
@@ -478,18 +500,14 @@ class GrowthStroberi:
             self.draw_strawberry_leaf(leaf_x - 30 * size_factor, leaf_y, 35 * size_factor, -20 - i * 5)
             self.draw_strawberry_leaf(leaf_x + 30 * size_factor, leaf_y, 35 * size_factor, 20 + i * 5)
         
-        # 3 buah stroberi matang yang bisa diklik
-        self.fruit_positions = [
+        # 3 buah stroberi matang
+        fruit_positions = [
             (x + int(sway) - 40, y - 50),
             (x + int(sway), y - 80),
             (x + int(sway) + 35, y - 55)
         ]
         
-        for i, (fx, fy) in enumerate(self.fruit_positions):
-            # Skip jika sudah dipanen
-            if i in [f['id'] for f in self.harvested_fruits]:
-                continue
-
+        for fx, fy in fruit_positions:
             pygame.draw.line(self.screen, self.GREEN, (fx, fy - 5), (fx, fy + 10), 3)
             
             for j in range(5):
@@ -566,81 +584,71 @@ class GrowthStroberi:
                              particle['size'])
     
     def draw_ui(self):
-        """Menggambar UI dan progress bars"""
-        # Progress bar
-        progress_bg = pygame.Rect(self.width // 2 - 200, 20, 400, 25)
-        self.draw_rounded_rect(self.screen, (50, 50, 50), progress_bg, 12)
-        
-        if self.current_stage < len(self.stages) - 1:
-            progress_width = int((self.growth_progress / self.stage_requirements[self.current_stage]) * 380)
-            progress_fill = pygame.Rect(self.width // 2 - 190, 25, progress_width, 15)
-            pygame.draw.rect(self.screen, (76, 175, 80), progress_fill, border_radius=8)
-        
-        pygame.draw.rect(self.screen, self.WHITE, progress_bg, 2, border_radius=12)
-        
-        stage_text = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
-        self.screen.blit(stage_text, (self.width // 2 - stage_text.get_width() // 2, 55))
-        
-        # Level bars
+        bg = pygame.Rect(self.width//2-200, 20, 400, 25)
+        pygame.draw.rect(self.screen, (40,40,40), bg, border_radius=12)
+
+        if self.current_stage < len(self.stages)-1:
+            req = self.stage_requirements[self.current_stage]
+            pw = int((self.growth_progress / req) * 380)
+            pygame.draw.rect(self.screen, (80,220,90),
+                             (self.width//2-190, 25, pw, 15), border_radius=8)
+
+        pygame.draw.rect(self.screen, self.WHITE, bg, 2, border_radius=12)
+
+        txt = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
+        self.screen.blit(txt, (self.width//2 - txt.get_width()//2, 55))
+
         bar_x = 30
         bar_y = 120
-        bar_width = 200
-        bar_height = 25
-        bar_spacing = 45
-        
-        levels = [
-            ('💧 Air', self.water_level, self.WATER_BLUE),
-            ('☀ Cahaya', self.sunlight_level, self.YELLOW),
-            ('🌱 Pupuk', self.fertilizer_level, self.GREEN)
+        bar_w = 200
+
+        items = [
+            ("Air", self.water_level, self.WATER_BLUE),
+            ("Cahaya", self.sunlight_level, (255,230,90)),
+            ("Pupuk", self.fertilizer_level, (80,200,120)),
         ]
-        
-        for i, (label, level, color) in enumerate(levels):
-            y = bar_y + (i * bar_spacing)
-            
-            label_text = self.font_button.render(label, True, self.WHITE)
-            label_bg = pygame.Rect(bar_x - 5, y - 8, label_text.get_width() + 10, 35)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 150), label_bg, 8)
-            self.screen.blit(label_text, (bar_x, y))
-            
-            bar_bg = pygame.Rect(bar_x + 150, y, bar_width, bar_height)
-            pygame.draw.rect(self.screen, (50, 50, 50), bar_bg, border_radius=12)
-            
-            fill_width = int((level / 100) * bar_width)
-            if fill_width > 0:
-                bar_fill = pygame.Rect(bar_x + 150, y, fill_width, bar_height)
-                pygame.draw.rect(self.screen, color, bar_fill, border_radius=12)
-            
-            pygame.draw.rect(self.screen, self.WHITE, bar_bg, 2, border_radius=12)
-            
-            pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
-            self.screen.blit(pct_text, (bar_x + 150 + bar_width + 10, y + 2))
+
+        for i,(name,val,col) in enumerate(items):
+            y = bar_y + i*45
+
+            lb = self.font_button.render(name, True, self.WHITE)
+            self.screen.blit(lb, (bar_x, y-5))
+
+            pygame.draw.rect(self.screen, (50,50,50),
+                             (bar_x+120, y, bar_w, 25), border_radius=12)
+            pygame.draw.rect(self.screen, self.WHITE,
+                             (bar_x+120, y, bar_w, 25), 2, border_radius=12)
+
+            fw = int((val/100) * bar_w)
+            pygame.draw.rect(self.screen, col,
+                             (bar_x+120, y, fw, 25), border_radius=12)
+
+            pct = self.font_digits.render(f"{int(val)}%", True, self.WHITE)
+            self.screen.blit(pct, (bar_x+120+bar_w+10, y))
         
         # Harvest button (hanya muncul saat siap panen)
-        if self.current_stage == 7 and self.total_harvested < 3:
+        if self.current_stage == 7 and not self.harvest_complete:  # UBAH KONDISI INI
             harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
             btn_color = (255, 140, 0) if self.harvest_button_hover else (255, 165, 0)
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
             pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
             
-            harvest_text = self.font_button.render("🍓 PANEN!", True, self.WHITE)
+            harvest_text = self.font_message.render("PANEN!", True, self.WHITE)
             self.screen.blit(harvest_text, 
-                           (self.width // 2 - harvest_text.get_width() // 2, 
+                        (self.width // 2 - harvest_text.get_width() // 2, 
                             self.height - 165))
             
-            count_text = self.font_small.render(f"{self.total_harvested}/3 buah", True, self.WHITE)
+            count_text = self.font_message.render("~3 buah", True, self.WHITE)  # UBAH INI
             self.screen.blit(count_text,
-                           (self.width // 2 - count_text.get_width() // 2,
+                        (self.width // 2 - count_text.get_width() // 2,
                             self.height - 135))
         
         # Message
         if self.message_timer > 0:
-            msg_text = self.font_button.render(self.message, True, self.WHITE)
-            msg_bg = pygame.Rect(self.width // 2 - msg_text.get_width() // 2 - 20,
-                                self.height // 2 - 50, 
-                                msg_text.get_width() + 40, 60)
-            self.draw_rounded_rect(self.screen, (0, 0, 0, 200), msg_bg, 15)
+            msg_text = self.font_message.render(self.message, True, self.WHITE)
+            # Background hitam dihapus
             self.screen.blit(msg_text, 
-                           (self.width // 2 - msg_text.get_width() // 2, 
+                        (self.width // 2 - msg_text.get_width() // 2, 
                             self.height // 2 - 35))
         
         # Back button
@@ -649,8 +657,7 @@ class GrowthStroberi:
         self.draw_rounded_rect(self.screen, color, back_button, 12)
         pygame.draw.rect(self.screen, self.WHITE, back_button, 2, border_radius=12)
         
-        back_text = self.font_button.render("← Kembali", True, self.WHITE)
-
+        back_text = self.font_digits.render("← Kembali", True, self.WHITE)
         self.screen.blit(back_text, (self.width - 90 - back_text.get_width() // 2, self.height - 57))
     
     def show_message(self, message):
@@ -658,58 +665,15 @@ class GrowthStroberi:
         self.message = message
         self.message_timer = 2.0
     
-    def harvest_fruit(self, mouse_pos):
-        """Panen buah yang diklik"""
-        if self.current_stage != 7:
-            return
-        
-        for i, (fx, fy) in enumerate(self.fruit_positions):
-            # Skip jika sudah dipanen
-            if i in [f['id'] for f in self.harvested_fruits]:
-                continue
-            
-            # Cek jarak klik dengan buah
-
-            dist = math.sqrt((mouse_pos[0] - fx)*2 + (mouse_pos[1] - fy)*2)
-            if dist < 30:
-                # Animasi panen
-                self.harvested_fruits.append({
-                    'id': i,
-                    'x': fx,
-                    'y': fy,
-                    'vx': random.uniform(-5, 5),
-                    'vy': random.uniform(-15, -10),
-                    'rotation': 0,
-                    'rot_speed': random.uniform(-10, 10)
-                })
-                self.total_harvested += 1
-                self.show_message(f"Buah dipanen! {self.total_harvested}/3")
-                
-                # Particle effect
-                for _ in range(20):
-                    self.particles.append({
-                        'x': fx,
-                        'y': fy,
-                        'vx': random.uniform(-4, 4),
-                        'vy': random.uniform(-6, -2),
-                        'life': 1.0,
-                        'color': self.RED,
-                        'size': random.randint(2, 5)
-                    })
-                
-                # Cek apakah semua buah sudah dipanen
-                if self.total_harvested >= 3:
-                    pygame.time.set_timer(pygame.USEREVENT + 1, 1500)  # Timer untuk pindah scene
-                    self.show_message("Selamat! Semua buah terpanen!")
-                
-                break
-    
     def handle_event(self, event):
         """Handle input events"""
         if event.type == pygame.USEREVENT + 1:
-            # Pindah ke halaman apresiasi dengan parameter plant_type
-            self.scene_manager.change_scene("apresiasi", plant_type="strawberry")
-            pygame.time.set_timer(pygame.USEREVENT + 1, 0)    
+            # Pindah ke apresiasi dengan parameter plant_type
+            self.scene_manager.change_scene("apresiasi", plant_type="stroberi")
+            pygame.time.set_timer(pygame.USEREVENT + 1, 0)
+        
+        elif event.type == pygame.MOUSEMOTION:
+            mouse_pos = pygame.mouse.get_pos()
             
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
@@ -720,7 +684,7 @@ class GrowthStroberi:
             self.fertilizer_bag['hover'] = bag_rect.collidepoint(mouse_pos)
             
             # Harvest button hover
-            if self.current_stage == 7 and self.total_harvested < 3:
+            if self.current_stage == 7 and not self.harvest_complete:
                 harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
                 self.harvest_button_hover = harvest_btn.collidepoint(mouse_pos)
             
@@ -728,14 +692,34 @@ class GrowthStroberi:
                 self.cloud['x'] = mouse_pos[0] - self.cloud['width'] // 2
                 self.cloud['x'] = max(50, min(self.width - 200, self.cloud['x']))
         
-        elif event.type == pygame.MOUSEMOTION:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             
-
-            # Cek klik buah untuk panen
-            if self.current_stage == 7:
-                self.harvest_fruit(mouse_pos)
+            # Harvest button (satu tombol seperti pakcoy) - TARUH DI SINI, PALING ATAS
+            if self.current_stage == 7 and not self.harvest_complete:
+                harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
+                if harvest_btn.collidepoint(mouse_pos):
+                    self.harvest_complete = True
+                    self.show_message("Stroberi Terpanen! Total: 3 buah")
+                    
+                    # Particle effect saat panen
+                    center_x = self.width // 2
+                    center_y = self.height - 300
+                    for _ in range(50):
+                        self.particles.append({
+                            'x': center_x,
+                            'y': center_y,
+                            'vx': random.uniform(-6, 6),
+                            'vy': random.uniform(-8, -3),
+                            'life': 1.5,
+                            'color': self.RED,
+                            'size': random.randint(3, 8)
+                        })
+                    
+                    # Timer untuk pindah ke apresiasi
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 2500)
             
+            # Cloud (lanjutan kode yang sudah ada)
             cloud_rect = pygame.Rect(
                 self.cloud['x'], self.cloud['y'],
                 self.cloud['width'], self.cloud['height']
@@ -744,13 +728,15 @@ class GrowthStroberi:
                 self.cloud['dragging'] = True
                 self.cloud['raining'] = True
             
+            # Sun
             sun_dist = math.sqrt((mouse_pos[0] - self.sun['x'])**2 + 
-                               (mouse_pos[1] - self.sun['y'])**2)
+                            (mouse_pos[1] - self.sun['y'])**2)
             if sun_dist < self.sun['radius'] + 30:
                 self.sunlight_level = min(100, self.sunlight_level + 25)
                 self.show_message("Cahaya matahari +25%!")
                 self.sun['glow'] = 50
             
+            # Fertilizer bag
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
                 self.fertilizer_bag['y'],
@@ -770,6 +756,8 @@ class GrowthStroberi:
                         'life': 1.0,
                         'size': random.randint(2, 4)
                     })
+            
+            # Back button
             back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
             if back_button.collidepoint(mouse_pos):
                 self.scene_manager.change_scene("pilih_buah")
@@ -835,14 +823,14 @@ class GrowthStroberi:
                 self.fertilizer_bag['particles'].remove(particle)
         
         # Update harvested fruits animation
-
+        # HAPUS SELURUH BAGIAN INI:
+        # Update harvested fruits animation
         for fruit in self.harvested_fruits[:]:
             fruit['x'] += fruit['vx']
             fruit['y'] += fruit['vy']
-            fruit['vy'] += 0.5  # Gravity
+            fruit['vy'] += 0.5
             fruit['rotation'] += fruit['rot_speed']
             
-            # Remove jika keluar layar
             if fruit['y'] > self.height + 50:
                 self.harvested_fruits.remove(fruit)
         
@@ -886,20 +874,6 @@ class GrowthStroberi:
         self.draw_soil()
         self.draw_plant()
         self.draw_fertilizer_bag()
-        
-        # Draw harvested fruits (animasi jatuh)
-        for fruit in self.harvested_fruits:
-            fx, fy = int(fruit['x']), int(fruit['y'])
-            
-            # Gambar buah yang jatuh dengan rotasi
-            fruit_surf = pygame.Surface((40, 60), pygame.SRCALPHA)
-            pygame.draw.circle(fruit_surf, self.RED, (13, 20), 11)
-            pygame.draw.circle(fruit_surf, self.RED, (27, 20), 11)
-            pygame.draw.polygon(fruit_surf, self.RED, [(6, 20), (20, 47), (34, 20)])
-            
-            rotated = pygame.transform.rotate(fruit_surf, fruit['rotation'])
-            rect = rotated.get_rect(center=(fx, fy))
-            self.screen.blit(rotated, rect)
         
         for particle in self.particles:
             pygame.draw.circle(self.screen, particle['color'],

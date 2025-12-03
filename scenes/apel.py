@@ -77,8 +77,8 @@ class GrowthApel:
         
         # Awan interaktif
         self.cloud = {
-            'x': self.width // 2 - 75,
-            'y': 150,
+            'x': self.width // 4,
+            'y': 100,
             'width': 150,
             'height': 80,
             'dragging': False,
@@ -170,6 +170,7 @@ class GrowthApel:
         radius = self.sun['radius']
         
         # Cahaya glow
+        glow_intensity = int(self.sun['glow'])
         for i in range(3):
             glow_radius = radius + 20 - (i * 7)
             glow_alpha = 30 - (i * 10)
@@ -803,6 +804,9 @@ class GrowthApel:
         if event.type == pygame.MOUSEMOTION:
             mouse_pos = pygame.mouse.get_pos()
             
+            if self.cloud['dragging']:
+                self.cloud['x'] = mouse_pos[0] - self.cloud['width'] // 2
+
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
                 self.fertilizer_bag['y'],
@@ -914,6 +918,17 @@ class GrowthApel:
     def update(self, dt):
         """Update logic dan animasi"""
         self.time += dt
+        # === CLOUD MOVEMENT ===
+        if self.cloud['dragging']:
+            # mengikuti mouse
+            mouse_x, _ = pygame.mouse.get_pos()
+            self.cloud['x'] = mouse_x - self.cloud['width'] // 2
+        else:
+            # gerak natural kiri-kanan
+            self.cloud['x'] += 0.4
+            if self.cloud['x'] > self.width:
+                self.cloud['x'] = -150
+
         self.plant_sway += dt * 2
         self.flower_spin += dt * 30
         

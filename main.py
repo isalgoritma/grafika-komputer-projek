@@ -1,7 +1,7 @@
 import pygame
 import sys
-# from scenes.homepage import Homepage
-# from scenes.pilih_kategori import PilihKategori
+from scenes.homepage import Homepage
+from scenes.pilih_kategori import PilihKategori
 from scenes.pilih_buah import PilihBuah
 from scenes.pilih_sayur import PilihSayur
 from scenes.strawberry import GrowthStroberi
@@ -51,8 +51,8 @@ def main():
     scene_manager = SceneManager(screen)
     
     # Register semua scene
-    # scene_manager.register_scene("homepage", Homepage)
-    # scene_manager.register_scene("pilih_kategori", PilihKategori)
+    scene_manager.register_scene("homepage", Homepage)
+    scene_manager.register_scene("pilih_kategori", PilihKategori)
     scene_manager.register_scene("pilih_buah", PilihBuah)
     scene_manager.register_scene("pilih_sayur", PilihSayur)
     scene_manager.register_scene("strawberry", GrowthStroberi)
@@ -62,8 +62,7 @@ def main():
     scene_manager.register_scene("apresiasi", Apresiasi)
 
     # Mulai dari homepage
-    # scene_manager.change_scene("homepage")
-    scene_manager.change_scene("pilih_sayur")
+    scene_manager.change_scene("homepage")
     
     running = True
     
