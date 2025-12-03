@@ -53,7 +53,7 @@ class PilihSayur:
             {
                 'name': 'SELEDRI',
                 'color': (120, 160, 90),
-                'scene': 'growth_seledri',
+                'scene': 'seledri',
                 'pos': [700, 150],
                 'target_pos': [700, 150],
                 'scale': 1.0,
@@ -226,10 +226,7 @@ class PilihSayur:
         
         # Teks nama tanaman dengan font custom (Heyam)
         font_size = int(80 * scale)
-        try:
-            scaled_font = pygame.font.Font(os.path.join('assets', 'fonts', 'Heyam.ttf'), font_size)
-        except:
-            scaled_font = pygame.font.Font(None, font_size)
+        scaled_font = pygame.font.Font('assets/fonts/Heyam.ttf', font_size)
         
         if card['hover']:
             # Efek glow dengan multiple shadow
@@ -277,9 +274,9 @@ class PilihSayur:
         )
         self.draw_rounded_rect(self.screen, self.BUTTON_GREEN, button_inner, 20)
         
-        # Teks tombol (font default/biasa)
-        button_font_size = int(45 * scale)
-        button_font = pygame.font.Font(None, button_font_size)
+        # Teks tombol
+        button_font_size = int(50 * scale)
+        button_font = pygame.font.Font('assets/fonts/Super Joyful.ttf', button_font_size)
         play_text = button_font.render("Play", True, self.TEXT_WHITE)
         play_x = button_x + button_width // 2 - play_text.get_width() // 2
         play_y = button_y + button_height // 2 - play_text.get_height() // 2

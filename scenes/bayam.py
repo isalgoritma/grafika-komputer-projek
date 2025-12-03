@@ -29,19 +29,19 @@ class GrowthBayam:
             self.font_small = pygame.font.Font(None, 24)
         
         # Warna realistis untuk pakcoy
-        # self.SOIL_BROWN = (101, 67, 33)
-        # self.SOIL_DARK = (76, 50, 25)
-        # self.PAKCOY_GREEN = (144, 238, 144)  # Hijau muda pakcoy
-        # self.DARK_GREEN = (34, 139, 34)
-        # self.LIGHT_GREEN = (200, 255, 200)
-        # self.STEM_WHITE = (245, 255, 250)  # Batang putih pakcoy
-        # self.STEM_LIGHT = (255, 255, 255)
-        # self.VEIN_GREEN = (100, 200, 100)
-        # self.WHITE = (255, 255, 255)
-        # self.YELLOW = (255, 223, 0)
-        # self.BUTTON_GREEN = (126, 176, 105)
-        # self.WATER_BLUE = (135, 206, 250)
-        # self.CLOUD_WHITE = (240, 248, 255)
+        self.SOIL_BROWN = (101, 67, 33)
+        self.SOIL_DARK = (76, 50, 25)
+        self.PAKCOY_GREEN = (144, 238, 144)  # Hijau muda pakcoy
+        self.DARK_GREEN = (34, 139, 34)
+        self.LIGHT_GREEN = (200, 255, 200)
+        self.STEM_WHITE = (245, 255, 250)  # Batang putih pakcoy
+        self.STEM_LIGHT = (255, 255, 255)
+        self.VEIN_GREEN = (100, 200, 100)
+        self.WHITE = (255, 255, 255)
+        self.YELLOW = (255, 223, 0)
+        self.BUTTON_GREEN = (126, 176, 105)
+        self.WATER_BLUE = (135, 206, 250)
+        self.CLOUD_WHITE = (240, 248, 255)
         
         # Tahapan pertumbuhan pakcoy (30-45 hari)
         self.stages = [
@@ -256,122 +256,132 @@ class GrowthBayam:
                            (x + int(sway), y - 28)])
     
     def draw_pakcoy_leaf(self, x, y, width, height, angle, maturity=1.0):
-        """Menggambar daun pakcoy MEMANJANG dengan batang putih panjang"""
-        leaf_surf = pygame.Surface((int(width * 3), int(height * 3)), pygame.SRCALPHA)
+        """Menggambar daun pakcoy lebar seperti sendok dengan batang putih tebal"""
+        leaf_surf = pygame.Surface((int(width * 4), int(height * 4)), pygame.SRCALPHA)
         
-        center_x = width * 1.5
-        center_y = height * 2
+        center_x = width * 2
+        center_y = height * 2.5
         
-        # BATANG PUTIH PANJANG (petiole) - ciri khas pakcoy
-        stem_width = int(width * 0.35 * maturity)
-        stem_length = int(height * 1.2)  # Batang lebih panjang
+        # BATANG PUTIH TEBAL (petiole) - sangat prominent di pakcoy
+        stem_width = int(width * 0.5 * maturity)  # Lebih lebar
+        stem_length = int(height * 1.3)
         
-        # Batang trapesium (lebih lebar di bawah)
+        # Batang trapesium lebar (seperti di foto)
         stem_points = [
-            (center_x - stem_width * 0.6, center_y),  # Bawah kiri (lebih lebar)
-            (center_x + stem_width * 0.6, center_y),  # Bawah kanan (lebih lebar)
-            (center_x + stem_width * 0.3, center_y - stem_length),  # Atas kanan
-            (center_x - stem_width * 0.3, center_y - stem_length)   # Atas kiri
+            (center_x - stem_width * 0.8, center_y),  # Bawah kiri (sangat lebar)
+            (center_x + stem_width * 0.8, center_y),  # Bawah kanan (sangat lebar)
+            (center_x + stem_width * 0.4, center_y - stem_length),  # Atas kanan
+            (center_x - stem_width * 0.4, center_y - stem_length)   # Atas kiri
         ]
         
         # Shadow batang
-        shadow_points = [(p[0] + 2, p[1] + 2) for p in stem_points]
-        pygame.draw.polygon(leaf_surf, (200, 210, 200), shadow_points)
+        shadow_points = [(p[0] + 3, p[1] + 3) for p in stem_points]
+        pygame.draw.polygon(leaf_surf, (190, 200, 190), shadow_points)
         
-        # Batang utama putih
-        pygame.draw.polygon(leaf_surf, self.STEM_WHITE, stem_points)
+        # Batang utama putih kehijauan (seperti foto)
+        pygame.draw.polygon(leaf_surf, (240, 255, 240), stem_points)
         
-        # Highlight batang (efek mengkilap)
-        highlight_points = [
-            (center_x - stem_width * 0.4, center_y),
-            (center_x - stem_width * 0.1, center_y),
-            (center_x - stem_width * 0.05, center_y - stem_length),
-            (center_x - stem_width * 0.2, center_y - stem_length)
+        # Highlight batang kiri (efek 3D)
+        highlight_left = [
+            (center_x - stem_width * 0.7, center_y),
+            (center_x - stem_width * 0.2, center_y),
+            (center_x - stem_width * 0.15, center_y - stem_length),
+            (center_x - stem_width * 0.3, center_y - stem_length)
         ]
-        pygame.draw.polygon(leaf_surf, self.STEM_LIGHT, highlight_points)
+        pygame.draw.polygon(leaf_surf, self.STEM_LIGHT, highlight_left)
         
-        # Border batang
-        pygame.draw.polygon(leaf_surf, (230, 245, 230), stem_points, 2)
+        # Shadow batang kanan (efek 3D)
+        shadow_right = [
+            (center_x + stem_width * 0.2, center_y),
+            (center_x + stem_width * 0.7, center_y),
+            (center_x + stem_width * 0.3, center_y - stem_length),
+            (center_x + stem_width * 0.15, center_y - stem_length)
+        ]
+        pygame.draw.polygon(leaf_surf, (220, 235, 220), shadow_right)
         
         # Garis tengah batang
-        pygame.draw.line(leaf_surf, (220, 235, 220),
+        pygame.draw.line(leaf_surf, (230, 245, 230),
                        (center_x, center_y),
-                       (center_x, center_y - stem_length), 1)
+                       (center_x, center_y - stem_length), 2)
         
-        # DAUN HIJAU MEMANJANG (blade) - bentuk spatula/sendok
-        blade_top_y = center_y - stem_length
-        blade_width = width * 0.85
-        blade_height = height * 0.9
+        # DAUN HIJAU LEBAR (blade) - bentuk sendok lebar seperti foto
+        blade_start_y = center_y - stem_length
+        blade_width = width * 1.2  # Lebih lebar!
+        blade_height = height * 0.8  # Lebih pendek dan lebar
         
-        # Membuat bentuk daun pakcoy yang memanjang (spoon-shaped)
+        # Membuat bentuk daun LEBAR seperti sendok
         leaf_points = []
-        num_points = 20
+        num_points = 24
         for i in range(num_points + 1):
-            angle_deg = 180 + (180 * i / num_points)
+            t = i / num_points
+            angle_deg = 180 + (180 * t)
             rad = math.radians(angle_deg)
             
-            # Bentuk oval memanjang
-            if i < num_points // 4 or i > num_points * 3 // 4:
-                # Bagian bawah (dekat batang) - lebih sempit
-                r_factor = 0.6
+            # Bentuk sangat lebar di tengah (seperti foto pakcoy)
+            if t < 0.2 or t > 0.8:
+                # Bagian bawah - menyempit ke batang
+                r_factor = 0.4 + (0.4 * math.sin(t * math.pi))
             else:
-                # Bagian tengah-atas - lebih lebar
-                r_factor = 1.0
+                # Bagian tengah - SANGAT LEBAR
+                r_factor = 0.95 + (0.15 * math.sin(t * math.pi))
+            
+            # Daun melengkung keluar (convex)
+            height_factor = 0.6 + (0.5 * math.sin(t * math.pi))
             
             px = center_x + math.cos(rad) * blade_width * r_factor
-            py = blade_top_y - math.sin(rad) * blade_height * 0.5
+            py = blade_start_y - math.sin(rad) * blade_height * height_factor
             leaf_points.append((px, py))
         
         # Shadow daun
-        shadow_leaf = [(p[0] + 3, p[1] + 3) for p in leaf_points]
-        pygame.draw.polygon(leaf_surf, (50, 100, 50), shadow_leaf)
+        shadow_leaf = [(p[0] + 4, p[1] + 4) for p in leaf_points]
+        pygame.draw.polygon(leaf_surf, (40, 90, 40), shadow_leaf)
         
-        # Daun outline gelap
-        pygame.draw.polygon(leaf_surf, self.DARK_GREEN, leaf_points)
+        # Outline daun gelap
+        pygame.draw.polygon(leaf_surf, self.DARK_GREEN, leaf_points, 0)
         
-        # Daun utama hijau muda
-        inner_leaf = [(p[0] + (center_x - p[0]) * 0.05, p[1] + (blade_top_y - p[1]) * 0.05) 
+        # Daun utama hijau cerah
+        inner_leaf = [(p[0] + (center_x - p[0]) * 0.04, p[1] + (blade_start_y - p[1]) * 0.04) 
                      for p in leaf_points]
         pygame.draw.polygon(leaf_surf, self.PAKCOY_GREEN, inner_leaf)
         
-        # Highlight di tengah daun (area lebih terang)
-        highlight_leaf = [(p[0] + (center_x - p[0]) * 0.3, p[1] + (blade_top_y - p[1]) * 0.3) 
-                         for p in leaf_points[5:15]]
+        # Area terang di tengah daun (seperti foto)
+        highlight_leaf = [(p[0] + (center_x - p[0]) * 0.4, p[1] + (blade_start_y - p[1]) * 0.4) 
+                         for p in leaf_points[6:18]]
         if len(highlight_leaf) > 2:
             pygame.draw.polygon(leaf_surf, self.LIGHT_GREEN, highlight_leaf)
         
-        # URAT DAUN (veins) - pola khas pakcoy
-        vein_color = self.VEIN_GREEN
+        # URAT DAUN yang lebih jelas
+        vein_color = (90, 180, 90)  # Lebih terang agar terlihat
         
-        # Urat tengah utama (dari batang ke ujung daun)
+        # Urat tengah tebal
         pygame.draw.line(leaf_surf, vein_color,
-                       (center_x, center_y - stem_length + 5),
-                       (center_x, blade_top_y - blade_height * 0.5), 4)
+                       (center_x, center_y - stem_length + 3),
+                       (center_x, blade_start_y - blade_height * 0.55), 5)
         
-        # Urat samping (bercabang dari urat tengah)
-        num_veins = 6
+        # Urat samping yang bercabang natural
+        num_veins = 7
         for i in range(num_veins):
             side = 1 if i % 2 == 0 else -1
-            vein_start_y = center_y - stem_length + (i * blade_height * 0.15)
+            progress = (i + 1) / (num_veins + 1)
+            vein_start_y = center_y - stem_length + (progress * blade_height * 0.8)
             
-            vein_end_x = center_x + side * blade_width * 0.65
-            vein_end_y = vein_start_y - blade_height * 0.15
+            vein_end_x = center_x + side * blade_width * (0.7 + progress * 0.2)
+            vein_end_y = vein_start_y - blade_height * 0.2
             
-            # Urat utama
-            pygame.draw.line(leaf_surf, vein_color,
-                           (center_x, vein_start_y),
-                           (vein_end_x, vein_end_y), 3)
+            # Urat melengkung natural
+            ctrl_x = center_x + side * blade_width * 0.3
+            ctrl_y = (vein_start_y + vein_end_y) / 2
             
-            # Urat cabang kecil
-            for j in range(2):
-                sub_vein_x = center_x + (vein_end_x - center_x) * (0.4 + j * 0.3)
-                sub_vein_y = vein_start_y + (vein_end_y - vein_start_y) * (0.4 + j * 0.3)
-                sub_end_x = sub_vein_x + side * blade_width * 0.15
-                sub_end_y = sub_vein_y - blade_height * 0.08
-                
-                pygame.draw.line(leaf_surf, vein_color,
-                               (sub_vein_x, sub_vein_y),
-                               (sub_end_x, sub_end_y), 1)
+            points = []
+            for t in range(11):
+                t_norm = t / 10
+                # Bezier curve sederhana
+                bx = (1-t_norm)**2 * center_x + 2*(1-t_norm)*t_norm * ctrl_x + t_norm**2 * vein_end_x
+                by = (1-t_norm)**2 * vein_start_y + 2*(1-t_norm)*t_norm * ctrl_y + t_norm**2 * vein_end_y
+                points.append((bx, by))
+            
+            if len(points) > 1:
+                pygame.draw.lines(leaf_surf, vein_color, False, points, 3)
         
         # Rotate and blit
         rotated = pygame.transform.rotate(leaf_surf, angle)
@@ -394,82 +404,82 @@ class GrowthBayam:
         self.draw_pakcoy_leaf(leaf_x + 20, leaf_y, 25, 35, 15, 0.6)
     
     def draw_four_to_six_leaves(self, x, y):
-        """Menggambar 4-6 daun (rosette mulai terbentuk)"""
-        sway = math.sin(self.plant_sway) * 3
+        """Menggambar 4-6 daun (rosette mulai terbentuk, lebih rapat)"""
+        sway = math.sin(self.plant_sway) * 2.5
         
         # Batang pusat
         pygame.draw.line(self.screen, self.STEM_WHITE, 
-                        (x, y), (x + int(sway), y - 25), 8)
+                        (x, y), (x + int(sway), y - 22), 10)
         
-        # 6 daun dalam formasi rosette
+        # 6 daun dalam formasi rosette rapat
         center_x = x + int(sway)
-        center_y = y - 30
+        center_y = y - 28
         
         leaf_positions = [
-            (-30, -10, -25, 0.7),
-            (30, -10, 25, 0.7),
-            (-25, 5, -15, 0.75),
-            (25, 5, 15, 0.75),
-            (-15, 15, -5, 0.8),
-            (15, 15, 5, 0.8)
+            (-28, -5, -20, 0.75),
+            (28, -5, 20, 0.75),
+            (-22, 8, -10, 0.8),
+            (22, 8, 10, 0.8),
+            (-12, 18, 0, 0.85),
+            (12, 18, 0, 0.85)
         ]
         
         for lx, ly, angle, maturity in leaf_positions:
-            wave = math.sin(self.leaf_wave + lx * 0.1) * 2
+            wave = math.sin(self.leaf_wave + lx * 0.1) * 1.5
             self.draw_pakcoy_leaf(center_x + lx, center_y + ly + int(wave), 
-                                 30, 42, angle, maturity)
+                                 35, 45, angle, maturity)
     
     def draw_full_vegetative(self, x, y):
-        """Menggambar fase vegetatif penuh (rosette besar)"""
-        sway = math.sin(self.plant_sway) * 4
+        """Menggambar fase vegetatif penuh (rosette besar rapat)"""
+        sway = math.sin(self.plant_sway) * 3
         
         # Batang pusat tebal
         pygame.draw.line(self.screen, self.STEM_LIGHT, 
-                        (x, y), (x + int(sway), y - 35), 12)
+                        (x, y), (x + int(sway), y - 30), 15)
         pygame.draw.line(self.screen, self.STEM_WHITE, 
-                        (x, y), (x + int(sway), y - 35), 10)
+                        (x, y), (x + int(sway), y - 30), 13)
         
-        # 10-12 daun dalam rosette sempurna
+        # Rosette rapat - 12 daun overlap
         center_x = x + int(sway)
-        center_y = y - 40
+        center_y = y - 35
         
-        # Layer 1 (terluar)
+        # Layer 1 (terluar) - 6 daun besar
         for i in range(6):
             angle_deg = (360 / 6) * i
-            distance = 50
+            distance = 42
             rad = math.radians(angle_deg)
             lx = center_x + math.cos(rad) * distance
-            ly = center_y + math.sin(rad) * distance * 0.7
-            wave = math.sin(self.leaf_wave + i * 0.5) * 3
+            ly = center_y + math.sin(rad) * distance * 0.6  # Lebih pipih
+            wave = math.sin(self.leaf_wave + i * 0.5) * 2
             
-            self.draw_pakcoy_leaf(lx, ly + int(wave), 35, 50, 
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 40, 50, 
                                  angle_deg - 90, 1.0)
         
-        # Layer 2 (tengah)
+        # Layer 2 (tengah) - 4 daun
         for i in range(4):
             angle_deg = (360 / 4) * i + 45
-            distance = 30
-            rad = math.radians(angle_deg)
-            lx = center_x + math.cos(rad) * distance
-            ly = center_y + math.sin(rad) * distance * 0.6
-            wave = math.sin(self.leaf_wave + i * 0.7) * 2
-            
-            self.draw_pakcoy_leaf(lx, ly + int(wave), 32, 46, 
-                                 angle_deg - 90, 0.95)
-        
-        # Layer 3 (dalam)
-        for i in range(3):
-            angle_deg = (360 / 3) * i
-            distance = 15
+            distance = 25
             rad = math.radians(angle_deg)
             lx = center_x + math.cos(rad) * distance
             ly = center_y + math.sin(rad) * distance * 0.5
+            wave = math.sin(self.leaf_wave + i * 0.7) * 2
             
-            self.draw_pakcoy_leaf(lx, ly, 28, 40, 
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 36, 46, 
+                                 angle_deg - 90, 0.95)
+        
+        # Layer 3 (dalam) - 3 daun kecil
+        for i in range(3):
+            angle_deg = (360 / 3) * i + 20
+            distance = 12
+            rad = math.radians(angle_deg)
+            lx = center_x + math.cos(rad) * distance
+            ly = center_y + math.sin(rad) * distance * 0.4
+            
+            self.draw_pakcoy_leaf(lx, ly, 30, 40, 
                                  angle_deg - 90, 0.85)
     
     def draw_harvest_ready(self, x, y):
-        """Menggambar pakcoy siap panen (rosette maksimal)"""
+        """Menggambar pakcoy siap panen (rosette maksimal, rapat seperti foto)"""
         if self.harvest_complete:
             # Tampilan setelah dipanen - sisa akar
             pygame.draw.line(self.screen, self.STEM_WHITE, (x, y), (x, y - 20), 8)
@@ -489,67 +499,66 @@ class GrowthBayam:
                            (x - harvest_text.get_width() // 2, y - 80))
             return
         
-        sway = math.sin(self.plant_sway) * 5
+        sway = math.sin(self.plant_sway) * 3
         
         # Batang pusat sangat tebal
         pygame.draw.line(self.screen, self.STEM_LIGHT, 
-                        (x, y), (x + int(sway), y - 45), 15)
+                        (x, y), (x + int(sway), y - 40), 18)
         pygame.draw.line(self.screen, self.STEM_WHITE, 
-                        (x, y), (x + int(sway), y - 45), 13)
+                        (x, y), (x + int(sway), y - 40), 16)
         
         # Highlight batang
         pygame.draw.line(self.screen, (255, 255, 255), 
-                        (x - 3, y), (x - 3 + int(sway), y - 45), 5)
+                        (x - 4, y), (x - 4 + int(sway), y - 40), 6)
         
-        # 14-16 daun dalam rosette maksimal
+        # Rosette SANGAT rapat - 16 daun overlap (seperti foto)
         center_x = x + int(sway)
-        center_y = y - 50
+        center_y = y - 45
         
-        # Layer 1 (terluar - daun terbesar)
+        # Layer 1 (terluar) - 8 daun sangat besar dan lebar
         for i in range(8):
             angle_deg = (360 / 8) * i
-            distance = 65
+            distance = 55
             rad = math.radians(angle_deg)
             lx = center_x + math.cos(rad) * distance
-            ly = center_y + math.sin(rad) * distance * 0.7
-            wave = math.sin(self.leaf_wave + i * 0.4) * 4
+            ly = center_y + math.sin(rad) * distance * 0.55  # Sangat pipih seperti foto
+            wave = math.sin(self.leaf_wave + i * 0.4) * 3
             
-            self.draw_pakcoy_leaf(lx, ly + int(wave), 42, 58, 
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 48, 56, 
                                  angle_deg - 90, 1.0)
         
-        # Layer 2 (tengah)
+        # Layer 2 (tengah) - 5 daun besar
         for i in range(5):
             angle_deg = (360 / 5) * i + 36
-            distance = 42
+            distance = 35
             rad = math.radians(angle_deg)
             lx = center_x + math.cos(rad) * distance
-            ly = center_y + math.sin(rad) * distance * 0.65
-            wave = math.sin(self.leaf_wave + i * 0.6) * 3
+            ly = center_y + math.sin(rad) * distance * 0.5
+            wave = math.sin(self.leaf_wave + i * 0.6) * 2
             
-            self.draw_pakcoy_leaf(lx, ly + int(wave), 38, 52, 
+            self.draw_pakcoy_leaf(lx, ly + int(wave), 42, 50, 
                                  angle_deg - 90, 0.95)
         
-        # Layer 3 (dalam)
-        for i in range(4):
-            angle_deg = (360 / 4) * i + 20
-            distance = 22
+        # Layer 3 (dalam) - 3 daun medium
+        for i in range(3):
+            angle_deg = (360 / 3) * i + 20
+            distance = 18
             rad = math.radians(angle_deg)
             lx = center_x + math.cos(rad) * distance
-            ly = center_y + math.sin(rad) * distance * 0.6
-            wave = math.sin(self.leaf_wave + i * 0.8) * 2
+            ly = center_y + math.sin(rad) * distance * 0.45
             
-            self.draw_pakcoy_leaf(lx, ly + int(wave), 32, 45, 
+            self.draw_pakcoy_leaf(lx, ly, 36, 44, 
                                  angle_deg - 90, 0.9)
         
-        # Indikator bisa dipanen (glow effect)
+        # Indikator bisa dipanen (glow effect hijau)
         if not self.harvest_complete:
-            glow_radius = 90 + math.sin(self.time * 3) * 10
+            glow_radius = 100 + math.sin(self.time * 3) * 12
             glow_surf = pygame.Surface((int(glow_radius * 2), int(glow_radius * 2)), 
                                       pygame.SRCALPHA)
-            pygame.draw.circle(glow_surf, (144, 238, 144, 30), 
+            pygame.draw.circle(glow_surf, (144, 238, 144, 35), 
                              (int(glow_radius), int(glow_radius)), int(glow_radius))
             self.screen.blit(glow_surf, 
-                           (center_x - glow_radius, center_y - glow_radius * 0.7))
+                           (center_x - glow_radius, center_y - glow_radius * 0.6))
     
     def draw_plant(self):
         """Menggambar tanaman sesuai tahap"""
@@ -617,7 +626,7 @@ class GrowthBayam:
         
         levels = [
             ('💧 Air', self.water_level, self.WATER_BLUE),
-            ('☀️ Cahaya', self.sunlight_level, self.YELLOW),
+            ('☀ Cahaya', self.sunlight_level, self.YELLOW),
             ('🌱 Pupuk', self.fertilizer_level, self.PAKCOY_GREEN)
         ]
         
