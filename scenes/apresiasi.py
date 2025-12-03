@@ -18,10 +18,11 @@ class Apresiasi:
         
         # Load font
         font_path = os.path.join('assets', 'fonts', 'Heyam.ttf')
+        font_path2 = os.path.join('assets', 'fonts', 'Super Joyful.ttf')
         try:
             self.font_title = pygame.font.Font(font_path, 90)
             self.font_subtitle = pygame.font.Font(font_path, 50)
-            self.font_message = pygame.font.Font(font_path, 36)
+            self.font_message = pygame.font.Font(font_path2, 36)
             self.font_button = pygame.font.Font(font_path, 40)
         except:
             self.font_title = pygame.font.Font(None, 90)
@@ -465,6 +466,6 @@ class Apresiasi:
                 self.draw_rounded_rect(self.screen, btn_color, btn_rect, 18)
                 pygame.draw.rect(self.screen, self.WHITE, btn_rect, 4, border_radius=18)
                 
-                btn_text = self.font_button.render("← Kembali", True, self.WHITE)
+                btn_text = self.font_button.render("Kembali", True, self.WHITE)
                 self.screen.blit(btn_text, 
                                (btn_x + btn_width // 2 - btn_text.get_width() // 2, btn_y + 13))

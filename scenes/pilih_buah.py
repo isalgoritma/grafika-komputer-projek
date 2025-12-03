@@ -16,9 +16,10 @@ class PilihBuah:
         
         # Load custom font
         font_path = os.path.join('assets', 'fonts', 'Heyam.ttf')
+        font_path2 = os.path.join('assets', 'fonts', 'Super Joyful.ttf')
         try:
             self.font_title = pygame.font.Font(font_path, 80)
-            self.font_button = pygame.font.Font(font_path, 50)
+            self.font_button = pygame.font.Font(font_path2, 50)
         except:
             print("Warning: Custom font not found, using default")
             self.font_title = pygame.font.Font(None, 80)
@@ -36,7 +37,7 @@ class PilihBuah:
         self.cards = [
             {
                 'name': 'STRAWBERRY',
-                'color': (220, 100, 100),
+                'color': (150, 180, 100),
                 'scene': 'strawberry',
                 'pos': [100, 150],
                 'target_pos': [100, 150],
@@ -46,7 +47,7 @@ class PilihBuah:
             },
             {
                 'name': 'APEL',
-                'color': (200, 80, 80),
+                'color': (150, 180, 100),
                 'scene': 'apel',
                 'pos': [700, 150],
                 'target_pos': [700, 150],
@@ -130,7 +131,7 @@ class PilihBuah:
         self.draw_rounded_rect(self.screen, self.CARD_BG, inner_rect, 25)
         
         # Teks nama tanaman
-        font_size = int(80 * scale)
+        font_size = int(70 * scale)
         scaled_font = pygame.font.Font('assets/fonts/Heyam.ttf', font_size)
         
         title_shadow = scaled_font.render(card['name'], True, card['color'])

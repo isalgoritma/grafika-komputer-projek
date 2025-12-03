@@ -66,11 +66,12 @@ class GrowthSeledri:
         self.water_consumption = 2.8
         self.sunlight_consumption = 2.3
         self.fertilizer_consumption = 1.8
+        self.need_message_cooldown = 0
         
         # Awan interaktif
         self.cloud = {
-            'x': self.width // 4,
-            'y': 100,
+            'x': self.width // 2 - 75,
+            'y': 150,
             'width': 150,
             'height': 80,
             'dragging': False,
@@ -468,6 +469,23 @@ class GrowthSeledri:
             pygame.draw.circle(self.screen, (139, 90, 43),
                              (int(particle['x']), int(particle['y'])), 
                              particle['size'])
+            
+    def get_harvest_button_rect(self):
+        """Menghasilkan rect tombol panen yang otomatis menyesuaikan teks."""
+        text_title = self.font_button.render("PANEN!", True, self.WHITE)
+        text_count = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
+
+        content_width = max(text_title.get_width(), text_count.get_width())
+        padding_x = 40
+        padding_y = 25
+
+        btn_width = content_width + padding_x
+        btn_height = text_title.get_height() + text_count.get_height() + padding_y
+
+        btn_x = self.width // 2 - btn_width // 2
+        btn_y = self.height - 180
+
+        return pygame.Rect(btn_x, btn_y, btn_width, btn_height)
     
     def draw_ui(self):
         """Menggambar UI dan progress bars"""
@@ -503,37 +521,51 @@ class GrowthSeledri:
             y = bar_y + (i * bar_spacing)
             
             label_text = self.font_label.render(label, True, self.WHITE)
-            self.screen.blit(label_text, (bar_x, y))
+            self.screen.blit(label_text, (bar_x, y - 2))
             
-            bar_bg = pygame.Rect(bar_x + 150, y, bar_width, bar_height)
+            bar_bg = pygame.Rect(bar_x + 115, y, bar_width, bar_height)
             pygame.draw.rect(self.screen, (50, 50, 50), bar_bg, border_radius=12)
             
             fill_width = int((level / 100) * bar_width)
             if fill_width > 0:
-                bar_fill = pygame.Rect(bar_x + 150, y, fill_width, bar_height)
+                bar_fill = pygame.Rect(bar_x + 115, y, fill_width, bar_height)
                 pygame.draw.rect(self.screen, color, bar_fill, border_radius=12)
             
             pygame.draw.rect(self.screen, self.WHITE, bar_bg, 2, border_radius=12)
             
             pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
-            self.screen.blit(pct_text, (bar_x + 150 + bar_width + 10, y + 2))
+            self.screen.blit(pct_text, (bar_x + 115 + bar_width + 10, y - 1))
         
         # Harvest button (hanya muncul saat stage panen)
         if self.current_stage == 4 and self.total_harvested < 8:
-            harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
+
+            harvest_btn = self.get_harvest_button_rect()
+
+            # Hover color
             btn_color = (255, 140, 0) if self.harvest_button_hover else (255, 165, 0)
+
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
             pygame.draw.rect(self.screen, self.WHITE, harvest_btn, 3, border_radius=15)
-            
-            back_text = self.font_button.render("PANEN!", True, self.WHITE)
-            self.screen.blit(back_text, 
-                           (self.width // 2 - back_text.get_width() // 2, 
-                            self.height - 165))
-            
-            count_text = self.font_small.render(f"{self.total_harvested}/8 buah", True, self.WHITE)
-            self.screen.blit(count_text,
-                           (self.width // 2 - count_text.get_width() // 2,
-                            self.height - 135))
+
+            # Text PANEN!
+            text_title = self.font_button.render("PANEN!", True, self.WHITE)
+            self.screen.blit(
+                text_title,
+                (
+                    harvest_btn.x + harvest_btn.width // 2 - text_title.get_width() // 2,
+                    harvest_btn.y + 10
+                )
+            )
+
+            # Text jumlah
+            text_count = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
+            self.screen.blit(
+                text_count,
+                (
+                    harvest_btn.x + harvest_btn.width // 2 - text_count.get_width() // 2,
+                    harvest_btn.y + harvest_btn.height - text_count.get_height() - 10
+                )
+            )
         
         # Message
         if self.message_timer > 0:
@@ -639,6 +671,9 @@ class GrowthSeledri:
             
             # Harvest button hover
             if self.current_stage == 4 and self.total_harvested < 8:
+                harvest_btn = self.get_harvest_button_rect()
+                self.harvest_button_hover = harvest_btn.collidepoint(mouse_pos)
+
                 harvest_btn = pygame.Rect(self.width // 2 - 100, self.height - 180, 200, 60)
                 self.harvest_button_hover = harvest_btn.collidepoint(mouse_pos)
             
@@ -785,13 +820,26 @@ class GrowthSeledri:
                     self.current_stage += 1
                     self.growth_progress = 0
                     self.show_message(f"Fase {self.stages[self.current_stage]}!")
+
             else:
-                if self.water_level < 10:
-                    self.show_message("Butuh air!")
-                elif self.sunlight_level < 10:
-                    self.show_message("Butuh cahaya!")
-                elif self.fertilizer_level < 10:
-                    self.show_message("Butuh pupuk!")
+                # Turunkan cooldown jika masih berjalan
+                if self.need_message_cooldown > 0:
+                    self.need_message_cooldown -= dt
+
+                # Hanya tampilkan pesan jika cooldown habis
+                if self.need_message_cooldown <= 0:
+
+                    if self.water_level < 20:
+                        self.show_message("Butuh air!")
+                        self.need_message_cooldown = 1.5  # cooldown 1.5 detik
+
+                    elif self.sunlight_level < 20:
+                        self.show_message("Butuh cahaya!")
+                        self.need_message_cooldown = 1.5
+
+                    elif self.fertilizer_level < 20:
+                        self.show_message("Butuh pupuk!")
+                        self.need_message_cooldown = 1.5
         else:
             self.water_level = max(0, self.water_level - dt * 0.5)
             self.sunlight_level = max(0, self.sunlight_level - dt * 0.5)

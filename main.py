@@ -63,7 +63,7 @@ def main():
 
     # Mulai dari homepage
     # scene_manager.change_scene("homepage")
-    scene_manager.change_scene("pilih_buah")
+    scene_manager.change_scene("pilih_sayur")
     
     running = True
     
