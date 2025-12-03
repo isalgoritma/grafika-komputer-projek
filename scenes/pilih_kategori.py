@@ -39,7 +39,7 @@ class PilihKategori:
             {
                 'level': 'Level 1',
                 'category': 'SAYURAN',
-                'desc': 'Bayam • Seledri • Selada',
+                'desc': 'Pakcoy • Seledri • Selada',
                 'color': self.VEGETABLE_COLOR,
                 'scene': 'pilih_sayur',
                 'pos': [200, 300],

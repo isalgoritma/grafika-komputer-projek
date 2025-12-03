@@ -5,7 +5,7 @@ from scenes.pilih_kategori import PilihKategori
 from scenes.pilih_buah import PilihBuah
 from scenes.pilih_sayur import PilihSayur
 from scenes.strawberry import GrowthStroberi
-from scenes.bayam import GrowthBayam
+from scenes.pakcoy import GrowthPakcoy
 
 class SceneManager:
     """Manager untuk mengelola perpindahan scene"""
@@ -53,7 +53,7 @@ def main():
     scene_manager.register_scene("pilih_buah", PilihBuah)
     scene_manager.register_scene("pilih_sayur", PilihSayur)
     scene_manager.register_scene("strawberry", GrowthStroberi)
-    scene_manager.register_scene("bayam", GrowthBayam)
+    scene_manager.register_scene("pakcoy", GrowthPakcoy)
     
     # Mulai dari homepage
     # scene_manager.change_scene("homepage")
