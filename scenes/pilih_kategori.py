@@ -15,10 +15,10 @@ class PilihKategori:
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
         
         # Load custom font - UPDATED to use Joyful.ttf
-        font_path = os.path.join('assets', 'fonts', 'Super Joyful.ttf')
+        font_path = os.path.join('assets', 'fonts', 'Joyful.ttf')
         try:
-            self.font_title = pygame.font.Font(None, 80)
-            self.font_level = pygame.font.Font(None, 70)
+            self.font_title = pygame.font.Font(font_path, 80)
+            self.font_level = pygame.font.Font(font_path, 70)
             self.font_desc = pygame.font.Font(None, 35)
         except:
             print("Warning: Joyful.ttf not found, using default font")
