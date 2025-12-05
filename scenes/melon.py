@@ -96,7 +96,6 @@ class GrowthMelon:
         self.fact_text = [
             "Melon kaya vitamin C dan sangat menyegarkan!",
             "Melon pertama dibudidayakan di Persia!",
-            "Melon mengandung 90% air!",
             "Melon matang punya aroma manis alami dari kulitnya."
         ]
         self.current_fact = ""
@@ -349,7 +348,7 @@ class GrowthMelon:
     def handle_event(self, event):
 
         if event.type == pygame.USEREVENT+1:
-            self.scene_manager.change_scene("apresiasi")
+            self.scene_manager.change_scene("apresiasi", plant_type="melon")
             pygame.time.set_timer(pygame.USEREVENT+1,0)
             return
 
