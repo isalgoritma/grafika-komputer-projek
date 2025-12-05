@@ -669,7 +669,7 @@ class GrowthStroberi:
         """Handle input events"""
         if event.type == pygame.USEREVENT + 1:
             # Pindah ke apresiasi dengan parameter plant_type
-            self.scene_manager.change_scene("apresiasi", plant_type="stroberi")
+            self.scene_manager.change_scene("apresiasi", plant_type="strawberry")
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)
         
         elif event.type == pygame.MOUSEMOTION:

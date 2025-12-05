@@ -10,12 +10,12 @@ class GrowthApel:
         self.width = screen.get_width()
         self.height = screen.get_height()
         
-        # Load background
+        # background
         bg_path = os.path.join('assets', 'images', 'bg-select.png')
         self.background = pygame.image.load(bg_path)
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
         
-        # Load font
+        # font
         font_path = os.path.join('assets', 'fonts', 'Heyam.ttf')
         font_path2 = os.path.join('assets', 'fonts', 'Super Joyful.ttf')
         try:
@@ -75,7 +75,7 @@ class GrowthApel:
         self.fertilizer_consumption = 1.5
         self.need_message_cooldown = 0
         
-        # Awan interaktif
+        # Awan 
         self.cloud = {
             'x': self.width // 4,
             'y': 100,
@@ -105,15 +105,15 @@ class GrowthApel:
             'particles': []
         }
         
-        # Harvest state
+        # Fase panen
         self.total_harvested = 0
         self.harvested_apples = []
         self.harvest_button_hover = False
         
-        # Particle effects
+        # Efek partikel
         self.particles = []
         
-        # Animation
+        # Animmasi
         self.plant_sway = 0
         self.flower_spin = 0
         self.time = 0
@@ -123,7 +123,6 @@ class GrowthApel:
         self.message_timer = 0
         
     def draw_rounded_rect(self, surface, color, rect, radius):
-        """Menggambar persegi dengan sudut melengkung"""
         if len(color) == 4:
             temp_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
             pygame.draw.rect(temp_surface, color, temp_surface.get_rect(), border_radius=radius)
@@ -132,12 +131,10 @@ class GrowthApel:
             pygame.draw.rect(surface, color, rect, border_radius=radius)
     
     def draw_sky_elements(self):
-        """Menggambar awan dan matahari"""
-        # === AWAN ===
+        # AWAN
         cloud_x = int(self.cloud['x'])
         cloud_y = int(self.cloud['y'])
         
-        # Bayangan awan
         pygame.draw.ellipse(self.screen, (200, 200, 200), 
                            (cloud_x + 5, cloud_y + 5, 60, 40))
         pygame.draw.ellipse(self.screen, (200, 200, 200), 
@@ -145,7 +142,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, (200, 200, 200), 
                            (cloud_x + 85, cloud_y + 5, 60, 40))
         
-        # Awan putih
         pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
                            (cloud_x, cloud_y, 60, 40))
         pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
@@ -153,7 +149,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.CLOUD_WHITE, 
                            (cloud_x + 80, cloud_y, 60, 40))
         
-        # Highlight awan
         pygame.draw.ellipse(self.screen, (255, 255, 255), 
                            (cloud_x + 10, cloud_y + 5, 40, 25))
         
@@ -164,13 +159,12 @@ class GrowthApel:
                                (int(drop['x']), int(drop['y'])),
                                (int(drop['x']), int(drop['y']) + 8), 2)
         
-        # === MATAHARI ===
+        # Matahari
         sun_x = int(self.sun['x'])
         sun_y = int(self.sun['y'])
         radius = self.sun['radius']
         
-        # Cahaya glow
-        glow_intensity = int(self.sun['glow'])
+        # glow_intensity = int(self.sun['glow'])
         for i in range(3):
             glow_radius = radius + 20 - (i * 7)
             glow_alpha = 30 - (i * 10)
@@ -179,7 +173,6 @@ class GrowthApel:
                              (glow_radius, glow_radius), glow_radius)
             self.screen.blit(glow_surf, (sun_x - glow_radius, sun_y - glow_radius))
         
-        # Sinar matahari
         for i in range(12):
             angle = (360 / 12) * i + self.time * 10
             rad = math.radians(angle)
@@ -192,33 +185,25 @@ class GrowthApel:
                            (int(start_x), int(start_y)),
                            (int(end_x), int(end_y)), 4)
         
-        # Lingkaran matahari
         pygame.draw.circle(self.screen, (255, 200, 0), (sun_x, sun_y), radius)
         pygame.draw.circle(self.screen, self.YELLOW, (sun_x, sun_y), radius - 5)
-        
-        # Highlight
         pygame.draw.circle(self.screen, (255, 255, 200), (sun_x - 10, sun_y - 10), 15)
     
     def draw_soil(self):
-        """Menggambar tanah dengan tekstur"""
         soil_y = self.height - 250
         
-        # Lapisan tanah
         for i in range(5):
             y_offset = i * 3
             color_variation = (101 - i * 5, 67 - i * 3, 33 - i * 2)
             pygame.draw.rect(self.screen, color_variation,
                            (0, soil_y + 30 + y_offset, self.width, 3))
         
-        # Tanah gelap (bawah)
         pygame.draw.rect(self.screen, self.SOIL_DARK, 
                         (0, soil_y + 45, self.width, 205))
         
-        # Tanah terang (atas)
         pygame.draw.rect(self.screen, self.SOIL_BROWN, 
                         (0, soil_y, self.width, 45))
         
-        # Tekstur tanah
         random.seed(42)
         for i in range(150):
             x = random.randint(0, self.width)
@@ -231,18 +216,14 @@ class GrowthApel:
         random.seed()
     
     def draw_seed(self, x, y):
-        """Menggambar biji apel"""
-        # Biji berbentuk oval dengan detail
         pygame.draw.ellipse(self.screen, (60, 40, 20), (x - 12, y - 8, 24, 16))
         pygame.draw.ellipse(self.screen, (101, 67, 33), (x - 10, y - 6, 20, 12))
         pygame.draw.ellipse(self.screen, (139, 90, 43), (x - 8, y - 5, 16, 10))
-        # Highlight
         pygame.draw.ellipse(self.screen, (160, 110, 60), (x - 6, y - 4, 8, 5))
     
     def draw_sprout(self, x, y):
-        """Menggambar kecambah dengan akar"""
         sway = math.sin(self.plant_sway) * 2
-        
+
         # Akar
         for i in range(3):
             offset = (i - 1) * 8
@@ -255,7 +236,7 @@ class GrowthApel:
         pygame.draw.line(self.screen, self.LIGHT_GREEN, 
                         (x, y), (x + int(sway), y - 40), 5)
         
-        # Daun kecil (kotiledon)
+        # Daun kecil 
         leaf_left = [
             (x + int(sway), y - 40),
             (x + int(sway) - 12, y - 35),
@@ -273,10 +254,9 @@ class GrowthApel:
         pygame.draw.polygon(self.screen, self.LEAF_GREEN, leaf_right)
     
     def draw_apple_leaf(self, x, y, size, angle):
-        """Menggambar daun apel dengan detail"""
         leaf_surf = pygame.Surface((int(size * 2), int(size * 2)), pygame.SRCALPHA)
-        
-        # Bentuk daun oval
+
+        # Bentuk daun
         pygame.draw.ellipse(leaf_surf, self.GREEN, (5, 0, size * 2 - 10, size * 2))
         pygame.draw.ellipse(leaf_surf, self.LEAF_GREEN, (10, 5, size * 2 - 20, size * 2 - 10))
         
@@ -286,7 +266,6 @@ class GrowthApel:
         pygame.draw.line(leaf_surf, self.DARK_GREEN, 
                         (center_x, 5), (center_x, size * 2 - 5), 2)
         
-        # Urat samping
         for i in range(4):
             offset_y = 10 + i * 12
             pygame.draw.line(leaf_surf, self.DARK_GREEN,
@@ -301,7 +280,6 @@ class GrowthApel:
         self.screen.blit(rotated, rect)
     
     def draw_young_leaves(self, x, y):
-        """Menggambar daun muda"""
         sway = math.sin(self.plant_sway) * 3
         
         # Batang utama
@@ -313,13 +291,10 @@ class GrowthApel:
             leaf_y = y - 15 - (i * 12)
             leaf_sway = sway * (1 - i * 0.15)
             
-            # Daun kiri
             self.draw_apple_leaf(x + int(leaf_sway) - 25, leaf_y, 20, -30)
-            # Daun kanan
             self.draw_apple_leaf(x + int(leaf_sway) + 25, leaf_y, 20, 30)
 
     def draw_young_tree(self, x, y):
-        """Menggambar pohon muda (sebelum berbunga) dengan kanopi besar tanpa bunga atau buah"""
         sway = math.sin(self.plant_sway) * 4
 
         # Batang besar
@@ -329,7 +304,6 @@ class GrowthApel:
         canopy_x = x + int(sway)
         canopy_y = y - 180
 
-        # Bayangan kanopi
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                             (canopy_x - 113, canopy_y - 33, 226, 151))
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
@@ -337,7 +311,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                             (canopy_x - 40, canopy_y - 40, 150, 133))
 
-        # Lapisan gelap
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
                             (canopy_x - 110, canopy_y - 30, 220, 145))
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
@@ -345,7 +318,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
                             (canopy_x - 35, canopy_y - 37, 145, 128))
 
-        # Lapisan hijau utama
         pygame.draw.ellipse(self.screen, self.GREEN,
                             (canopy_x - 105, canopy_y - 25, 210, 135))
         pygame.draw.ellipse(self.screen, self.GREEN,
@@ -353,29 +325,24 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.GREEN,
                             (canopy_x - 30, canopy_y - 32, 140, 123))
 
-        # Lapisan terang
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN,
                             (canopy_x - 100, canopy_y - 20, 200, 125))
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN,
                             (canopy_x - 80, canopy_y - 30, 145, 120))
 
-        # Highlight
         pygame.draw.ellipse(self.screen, (100, 220, 100),
                             (canopy_x - 70, canopy_y - 5, 110, 55))
     
     def draw_flower(self, x, y):
-        """Menggambar pohon berbunga dengan bentuk sama seperti pohon buah matang"""
         sway = math.sin(self.plant_sway) * 4
 
-        # Batang besar (mengikuti draw_ripe_fruit)
+        # Batang besar
         pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 130), 40)
         pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 130), 34)
 
-        # Titik pusat kanopi
         canopy_x = x + int(sway)
         canopy_y = y - 180
 
-        # Bayangan kanopi organik (layer seperti ripe_fruit)
         pygame.draw.ellipse(self.screen, (25, 100, 25),
                         (canopy_x - 113, canopy_y - 33, 226, 151))
         pygame.draw.ellipse(self.screen, (25, 100, 25),
@@ -383,7 +350,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, (25, 100, 25),
                         (canopy_x - 40, canopy_y - 40, 150, 133))
 
-        # Layer daun gelap
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
                         (canopy_x - 110, canopy_y - 30, 220, 145))
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
@@ -391,7 +357,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.DARK_GREEN,
                         (canopy_x - 35, canopy_y - 37, 145, 128))
 
-        # Layer hijau utama
         pygame.draw.ellipse(self.screen, self.GREEN,
                         (canopy_x - 105, canopy_y - 25, 210, 135))
         pygame.draw.ellipse(self.screen, self.GREEN,
@@ -399,17 +364,15 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.GREEN,
                         (canopy_x - 30, canopy_y - 32, 140, 123))
 
-        # Layer terang
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN,
                         (canopy_x - 100, canopy_y - 20, 200, 125))
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN,
                         (canopy_x - 80, canopy_y - 30, 145, 120))
 
-        # Highlight
         pygame.draw.ellipse(self.screen, (100, 220, 100),
                         (canopy_x - 70, canopy_y - 5, 110, 55))
 
-        # Titik-titik bunga (di posisi mirip apel matang)
+        # Titik-titik bunga 
         flower_spots = [
             (canopy_x - 65, canopy_y + 15),
             (canopy_x - 40, canopy_y - 10),
@@ -423,22 +386,20 @@ class GrowthApel:
             (canopy_x + 25, canopy_y + 25)
         ]
 
-        # Menggambar bunga-bunga
+        # bunga-bunga
         for fx, fy in flower_spots:
-            for i in range(5):  # kelopak
+            for i in range(5):  
                 angle = (360 / 5) * i + self.flower_spin * 0.5
                 rad = math.radians(angle)
                 px = fx + math.cos(rad) * 10
                 py = fy + math.sin(rad) * 10
                 pygame.draw.circle(self.screen, self.PINK, (int(px), int(py)), 6)
 
-            # pusat bunga
             pygame.draw.circle(self.screen, self.YELLOW, (fx, fy), 5)
             pygame.draw.circle(self.screen, (255, 255, 200), (fx, fy), 3)
 
     
     def draw_young_fruit(self, x, y):
-        """Menggambar pohon dengan buah muda (hijau kecil) dengan bentuk seperti draw_ripe_fruit()"""
         sway = math.sin(self.plant_sway) * 4
 
         # Batang besar
@@ -448,7 +409,6 @@ class GrowthApel:
         canopy_x = x + int(sway)
         canopy_y = y - 180
 
-        # Bayangan kanopi
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                         (canopy_x - 113, canopy_y - 33, 226, 151))
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
@@ -456,7 +416,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                         (canopy_x - 40, canopy_y - 40, 150, 133))
 
-        # Lapisan gelap
         pygame.draw.ellipse(self.screen, self.DARK_GREEN, 
                         (canopy_x - 110, canopy_y - 30, 220, 145))
         pygame.draw.ellipse(self.screen, self.DARK_GREEN, 
@@ -464,7 +423,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.DARK_GREEN, 
                         (canopy_x - 35, canopy_y - 37, 145, 128))
 
-        # Lapisan hijau utama
         pygame.draw.ellipse(self.screen, self.GREEN, 
                         (canopy_x - 105, canopy_y - 25, 210, 135))
         pygame.draw.ellipse(self.screen, self.GREEN, 
@@ -472,17 +430,14 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, self.GREEN, 
                         (canopy_x - 30, canopy_y - 32, 140, 123))
 
-        # Lapisan terang
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN, 
                         (canopy_x - 100, canopy_y - 20, 200, 125))
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN, 
                         (canopy_x - 80, canopy_y - 30, 145, 120))
 
-        # Highlight
         pygame.draw.ellipse(self.screen, (100, 220, 100), 
                         (canopy_x - 70, canopy_y - 5, 110, 55))
 
-        # Titik buah muda (posisi sama seperti apel matang)
         young_spots = [
             (canopy_x - 65, canopy_y + 15),
             (canopy_x - 40, canopy_y - 10),
@@ -498,25 +453,21 @@ class GrowthApel:
 
         # Gambar buah muda hijau
         for ax, ay in young_spots:
-            # Apel hijau kecil
             pygame.draw.circle(self.screen, self.LIGHT_GREEN, (ax, ay), 10)
             pygame.draw.circle(self.screen, (180, 255, 180), (ax - 3, ay - 3), 4)
             pygame.draw.circle(self.screen, (255, 255, 255), (ax - 4, ay - 4), 2)
 
     
     def draw_ripe_fruit(self, x, y):
-        """Menggambar pohon dengan buah matang (merah)"""
         sway = math.sin(self.plant_sway) * 4
         
-        # Batang lebih besar dan tinggi
+        # Batang besar
         pygame.draw.line(self.screen, self.TRUNK_BROWN, (x, y), (x + int(sway), y - 130), 40)
         pygame.draw.line(self.screen, self.DARK_BROWN, (x, y), (x + int(sway), y - 130), 34)
         
-        # Kanopi organik (meliuk-liuk)
         canopy_x = x + int(sway)
         canopy_y = y - 180
         
-        # Bayangan kanopi organik - lebih besar
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                            (canopy_x - 113, canopy_y - 33, 226, 151))
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
@@ -524,7 +475,6 @@ class GrowthApel:
         pygame.draw.ellipse(self.screen, (25, 100, 25), 
                            (canopy_x - 40, canopy_y - 40, 150, 133))
         
-        # Lapisan kanopi organik (tidak bulat sempurna) - lebih besar
         pygame.draw.ellipse(self.screen, self.DARK_GREEN, 
                            (canopy_x - 110, canopy_y - 30, 220, 145))
         pygame.draw.ellipse(self.screen, self.DARK_GREEN, 
@@ -543,12 +493,11 @@ class GrowthApel:
                            (canopy_x - 100, canopy_y - 20, 200, 125))
         pygame.draw.ellipse(self.screen, self.LEAF_GREEN, 
                            (canopy_x - 80, canopy_y - 30, 145, 120))
-        
-        # Highlight kanopi
+
         pygame.draw.ellipse(self.screen, (100, 220, 100), 
                            (canopy_x - 70, canopy_y - 5, 110, 55))
         
-        # Apel-apel pada pohon - lebih banyak dan tersebar
+        # Titik titik apel 
         self.apple_positions = []
         apple_spots = [
             (canopy_x - 65, canopy_y + 15),
@@ -563,17 +512,15 @@ class GrowthApel:
             (canopy_x + 25, canopy_y + 25)
         ]
         
+        # Gambar apel matang
         for idx, (ax, ay) in enumerate(apple_spots):
             self.apple_positions.append((ax, ay, idx))
-            
-            # Apel merah mengkilap
             pygame.draw.circle(self.screen, self.RED_APPLE, (ax, ay), 12)
             pygame.draw.circle(self.screen, self.LIGHT_RED, (ax - 4, ay - 4), 5)
             pygame.draw.circle(self.screen, (255, 255, 255), (ax - 5, ay - 5), 2)
     
 
     def draw_plant(self):
-        """Menggambar tanaman sesuai tahap"""
         center_x = self.width // 2
         soil_y = self.height - 250
         
@@ -593,7 +540,6 @@ class GrowthApel:
             self.draw_ripe_fruit(center_x, soil_y)
     
     def draw_fertilizer_bag(self):
-        """Menggambar kantong pupuk"""
         x = self.fertilizer_bag['x']
         y = self.fertilizer_bag['y']
         w = self.fertilizer_bag['width']
@@ -620,7 +566,6 @@ class GrowthApel:
                              particle['size'])
             
     def get_harvest_button_rect(self):
-        """Menghasilkan rect tombol panen yang otomatis menyesuaikan teks."""
         text_title = self.font_button.render("PANEN!", True, self.WHITE)
         text_count = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
 
@@ -638,7 +583,6 @@ class GrowthApel:
 
     
     def draw_ui(self):
-        """Menggambar UI dan progress bars"""
         # Progress bar
         progress_bg = pygame.Rect(self.width // 2 - 200, 20, 400, 25)
         self.draw_rounded_rect(self.screen, (50, 50, 50), progress_bg, 12)
@@ -654,7 +598,7 @@ class GrowthApel:
         stage_text = self.font_stage.render(self.stages[self.current_stage], True, self.WHITE)
         self.screen.blit(stage_text, (self.width // 2 - stage_text.get_width() // 2, 55))
         
-        # Level bars
+        # Level bar
         bar_x = 30
         bar_y = 120
         bar_width = 200
@@ -686,12 +630,11 @@ class GrowthApel:
             pct_text = self.font_small.render(f"{int(level)}%", True, self.WHITE)
             self.screen.blit(pct_text, (bar_x + 115 + bar_width + 10, y - 1))
         
-        # Harvest button (hanya muncul saat stage panen)
+        # Button panen
         if self.current_stage == 6 and self.total_harvested < 5:
 
             harvest_btn = self.get_harvest_button_rect()
 
-            # Hover color
             btn_color = (255, 140, 0) if self.harvest_button_hover else (255, 165, 0)
 
             self.draw_rounded_rect(self.screen, btn_color, harvest_btn, 15)
@@ -730,7 +673,7 @@ class GrowthApel:
                             self.height // 2 - 40))
             pygame.draw.rect(self.screen, self.WHITE, msg_bg, 2, border_radius=12)
         
-        # Back button
+        # Button kembali
         back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
         color = self.BUTTON_GREEN if not back_button.collidepoint(pygame.mouse.get_pos()) else (150, 200, 130)
         self.draw_rounded_rect(self.screen, color, back_button, 12)
@@ -740,12 +683,10 @@ class GrowthApel:
         self.screen.blit(back_text, (self.width - 90 - back_text.get_width() // 2, self.height - 57))
     
     def show_message(self, message):
-        """Tampilkan pesan sementara"""
         self.message = message
         self.message_timer = 2.0
     
     def harvest_apple(self, mouse_pos):
-        """Panen apel yang diklik"""
         if self.current_stage != 6:
             return
         
@@ -753,11 +694,9 @@ class GrowthApel:
             return
         
         for fx, fy, apple_id in self.apple_positions:
-            # Skip jika sudah dipanen
             if apple_id in [a['id'] for a in self.harvested_apples]:
                 continue
             
-            # Cek jarak klik dengan apel
             dist = math.sqrt((mouse_pos[0] - fx)**2 + (mouse_pos[1] - fy)**2)
             if dist < 20:
                 # Animasi panen
@@ -785,7 +724,6 @@ class GrowthApel:
                         'size': random.randint(2, 5)
                     })
                 
-                # Cek apakah semua apel sudah dipanen
                 if self.total_harvested >= 5:
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1500)
                     self.show_message("Selamat! Semua apel terpanen!")
@@ -793,10 +731,7 @@ class GrowthApel:
                 break
     
     def handle_event(self, event):
-        """Handle input events"""
-        # Timer untuk pindah ke halaman apresiasi
         if event.type == pygame.USEREVENT + 1:
-            # Pindah ke halaman apresiasi dengan parameter plant_type
             self.scene_manager.change_scene("apresiasi", plant_type="apel")
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # Stop timer
             return
@@ -815,30 +750,25 @@ class GrowthApel:
             )
             self.fertilizer_bag['hover'] = bag_rect.collidepoint(mouse_pos)
             
-            # Harvest button hover
             if self.current_stage == 6 and self.total_harvested < 5:
                 harvest_btn = self.get_harvest_button_rect()
                 self.harvest_button_hover = harvest_btn.collidepoint(mouse_pos)
 
-                # Render teks
                 text_title = self.font_button.render("PANEN!", True, self.WHITE)
                 text_count = self.font_small.render(f"{self.total_harvested}/5 buah", True, self.WHITE)
 
-                # Hitung ukuran tombol berdasarkan teks paling lebar
                 content_width = max(text_title.get_width(), text_count.get_width())
-                padding_x = 40   # kiri-kanan
-                padding_y = 25   # atas-bawah total
+                padding_x = 40   
+                padding_y = 25   
 
                 btn_width = content_width + padding_x
                 btn_height = text_title.get_height() + text_count.get_height() + padding_y
 
-                # Posisi tombol
                 btn_x = self.width // 2 - btn_width // 2
                 btn_y = self.height - 180
 
                 harvest_btn = pygame.Rect(btn_x, btn_y, btn_width, btn_height)
 
-                # Warna hover
                 btn_color = (255, 140, 0) if self.harvest_button_hover else (255, 165, 0)
 
                 # Gambar tombol
@@ -852,7 +782,7 @@ class GrowthApel:
                     btn_y + 10)
                 )
 
-                # Teks jumlah panen (0/5 buah)
+                # Teks jumlah panen
                 self.screen.blit(
                     text_count,
                     (btn_x + btn_width // 2 - text_count.get_width() // 2,
@@ -863,11 +793,11 @@ class GrowthApel:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             
-            # Cek klik apel untuk panen
+            # klik apel untuk panen
             if self.current_stage == 6:
                 self.harvest_apple(mouse_pos)
             
-            # Cloud (hujan)
+            # awan
             cloud_rect = pygame.Rect(
                 self.cloud['x'], self.cloud['y'],
                 self.cloud['width'], self.cloud['height']
@@ -876,7 +806,7 @@ class GrowthApel:
                 self.cloud['dragging'] = True
                 self.cloud['raining'] = True
             
-            # Sun (cahaya)
+            # matahari
             sun_dist = math.sqrt((mouse_pos[0] - self.sun['x'])**2 + 
                                (mouse_pos[1] - self.sun['y'])**2)
             if sun_dist < self.sun['radius'] + 30:
@@ -884,7 +814,7 @@ class GrowthApel:
                 self.show_message("Cahaya matahari +25%!")
                 self.sun['glow'] = 50
             
-            # Fertilizer bag
+            # pupuk
             bag_rect = pygame.Rect(
                 self.fertilizer_bag['x'],
                 self.fertilizer_bag['y'],
@@ -905,7 +835,7 @@ class GrowthApel:
                         'size': random.randint(2, 4)
                     })
             
-            # Back button
+            # Button kembali
             back_button = pygame.Rect(self.width - 150, self.height - 70, 120, 50)
             if back_button.collidepoint(mouse_pos):
                 self.scene_manager.change_scene("pilih_buah")
@@ -916,15 +846,12 @@ class GrowthApel:
             self.cloud['rain_drops'].clear()
     
     def update(self, dt):
-        """Update logic dan animasi"""
         self.time += dt
-        # === CLOUD MOVEMENT ===
+        # Animasi awan
         if self.cloud['dragging']:
-            # mengikuti mouse
             mouse_x, _ = pygame.mouse.get_pos()
             self.cloud['x'] = mouse_x - self.cloud['width'] // 2
         else:
-            # gerak natural kiri-kanan
             self.cloud['x'] += 0.4
             if self.cloud['x'] > self.width:
                 self.cloud['x'] = -150
@@ -963,7 +890,7 @@ class GrowthApel:
                             'size': 2
                         })
         
-        # Update particles
+        # Update partikel
         for particle in self.particles[:]:
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
@@ -972,7 +899,7 @@ class GrowthApel:
             if particle['life'] <= 0:
                 self.particles.remove(particle)
         
-        # Update fertilizer particles
+        # Update partikel pupuk
         for particle in self.fertilizer_bag['particles'][:]:
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
@@ -981,7 +908,7 @@ class GrowthApel:
             if particle['life'] <= 0:
                 self.fertilizer_bag['particles'].remove(particle)
         
-        # Update harvested apples animation
+        # Update animasi panen
         for apple in self.harvested_apples[:]:
             apple['x'] += apple['vx']
             apple['y'] += apple['vy']
@@ -1012,16 +939,14 @@ class GrowthApel:
                     self.growth_progress = 0
                     self.show_message(f"Fase {self.stages[self.current_stage]}!")
             else:
-                # Turunkan cooldown jika masih berjalan
                 if self.need_message_cooldown > 0:
                     self.need_message_cooldown -= dt
 
-                # Hanya tampilkan pesan jika cooldown habis
                 if self.need_message_cooldown <= 0:
 
                     if self.water_level < 20:
                         self.show_message("Butuh air!")
-                        self.need_message_cooldown = 1.5  # cooldown 1.5 detik
+                        self.need_message_cooldown = 1.5  
 
                     elif self.sunlight_level < 20:
                         self.show_message("Butuh cahaya!")
@@ -1036,7 +961,6 @@ class GrowthApel:
             self.fertilizer_level = max(0, self.fertilizer_level - dt * 0.5)
     
     def draw(self):
-        """Render scene"""
         self.screen.blit(self.background, (0, 0))
         
         self.draw_sky_elements()
@@ -1044,7 +968,7 @@ class GrowthApel:
         self.draw_plant()
         self.draw_fertilizer_bag()
         
-        # Draw harvested apples (animasi jatuh)
+        # Animasi panen
         for apple in self.harvested_apples:
             ax, ay = int(apple['x']), int(apple['y'])
             
@@ -1056,7 +980,7 @@ class GrowthApel:
             rect = rotated.get_rect(center=(ax, ay))
             self.screen.blit(rotated, rect)
         
-        # Draw particles
+        # Gambar partikel
         for particle in self.particles:
             pygame.draw.circle(self.screen, particle['color'],
                              (int(particle['x']), int(particle['y'])),
