@@ -56,8 +56,7 @@ class GrowthLettuce:
         self.fact_text = [
             "Selada adalah sayuran berdaun yang pertama kali dibudidayakan oleh bangsa Mesir.",
             "Selada mengandung 95% air, sehingga sangat menyegarkan!",
-            "Selada kaya vitamin A dan K, baik untuk kulit dan tulang.",
-            "Selada tumbuh paling baik pada suhu 15-20°C."
+            "Selada kaya vitamin A dan K, baik untuk kulit dan tulang."
         ]
         self.current_fact = ""
 
@@ -407,7 +406,7 @@ class GrowthLettuce:
 
     def handle_event(self, event):
         if event.type == pygame.USEREVENT + 1:
-            self.scene_manager.change_scene("apresiasi")
+            self.scene_manager.change_scene("apresiasi", plant_type="selada")
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)
             return
 
