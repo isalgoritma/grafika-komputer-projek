@@ -494,15 +494,10 @@ class GrowthLettuce:
         )
 
         if enough and self.current_stage < len(self.stages) - 1:
-
-            # Tambah progress
             self.growth_progress += 3 * dt  
 
-            # CEK indeks sebelum akses requirement
             if self.current_stage < len(self.stage_requirements):
-
                 req = self.stage_requirements[self.current_stage]
-
                 if self.growth_progress >= req:
                     self.current_stage += 1
                     self.growth_progress = 0
