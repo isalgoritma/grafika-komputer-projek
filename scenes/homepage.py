@@ -7,14 +7,13 @@ class Homepage:
         self.screen = screen
         self.scene_manager = scene_manager
 
-        # FULLSCREEN - mengikuti ukuran layar utama
+        # ukuran layar
         self.WIDTH = screen.get_width()
         self.HEIGHT = screen.get_height()
 
-        # --- Background Gradient ---
         self.background = self.create_background()
 
-        # --- Clouds (posisi disesuaikan dengan layar) ---
+        # cloud
         self.clouds = [
             [self.make_cloud(1.0), 60, 70, 0.08],
             [self.make_cloud(0.85), 250, 150, 0.08],
@@ -22,14 +21,13 @@ class Homepage:
             [self.make_cloud(0.85), self.WIDTH * 0.82, 160, 0.08],
         ]
 
-        # --- Fruits image (scaled proportionally) ---
+        #gambar buah
         fruits = pygame.image.load("assets/images/buah_homepage.png").convert_alpha()
         fruit_height = int(self.HEIGHT * 0.54)  # 54% dari tinggi layar
         fruit_width = int(fruit_height * (1000/350))  # Maintain aspect ratio
         self.fruits = pygame.transform.smoothscale(fruits, (fruit_width, fruit_height))
         self.fruit_y = int(self.HEIGHT * 0.46)  # Posisi Y buah
 
-        # --- Fonts (scaled based on screen size) ---
         title_size = int(130 * (self.HEIGHT / 650))
         subtitle_size = int(42 * (self.HEIGHT / 650))
         start_size = int(70 * (self.HEIGHT / 650))
@@ -38,7 +36,7 @@ class Homepage:
         self.subtitle_font = pygame.font.Font("assets/fonts/heyam/Heyam.ttf", subtitle_size)
         self.start_font = pygame.font.Font("assets/fonts/heyam/Heyam.ttf", start_size)
 
-        # --- Start button (scaled) ---
+        #tombol startnnya
         btn_width = int(360 * (self.WIDTH / 1000))
         btn_height = int(140 * (self.HEIGHT / 650))
         
@@ -49,7 +47,7 @@ class Homepage:
 
         self.pulse_t = 0
 
-    # ============ BACKGROUND ============
+    #bg
     def create_background(self):
         bg = pygame.Surface((self.WIDTH, self.HEIGHT))
         for y in range(self.HEIGHT):
@@ -60,7 +58,6 @@ class Homepage:
             pygame.draw.line(bg, (int(r*255), int(g*255), int(b*255)), (0, y), (self.WIDTH, y))
         return bg
 
-    # ============ CLOUD MAKER ============
     def make_cloud(self, scale=1.0):
         w, h = int(260 * scale), int(130 * scale)
         surf = pygame.Surface((w, h), pygame.SRCALPHA)
@@ -70,13 +67,11 @@ class Homepage:
         pygame.draw.circle(surf, (255, 255, 255), (210, 75), int(35 * scale))
         return surf
 
-    # ============ EVENT ============
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.button_rect.collidepoint(event.pos):
                 self.scene_manager.change_scene("pilih_kategori")
 
-    # ============ UPDATE ============
     def update(self, dt):
         for cloud in self.clouds:
             img, x, y, spd = cloud
@@ -87,20 +82,18 @@ class Homepage:
 
         self.pulse_t += dt * 2
 
-    # ============ DRAW ============
     def draw(self):
-        # DRAW LANGSUNG KE SCREEN (FULLSCREEN)
         self.screen.blit(self.background, (0, 0))
 
-        # Clouds
+        #cloud
         for img, x, y, spd in self.clouds:
             self.screen.blit(img, (x, y))
 
-        # fruits (centered)
+        #fruits
         fruit_x = (self.WIDTH - self.fruits.get_width()) // 2
         self.screen.blit(self.fruits, (fruit_x, self.fruit_y))
 
-        # Title
+        #judul
         title = self.title_font.render("BLOOMIO", True, (255, 182, 210))
         shadow = self.title_font.render("BLOOMIO", True, (170, 100, 150))
         tx = self.WIDTH // 2 - title.get_width() // 2
@@ -108,12 +101,12 @@ class Homepage:
         self.screen.blit(shadow, (tx + 6, ty + 6))
         self.screen.blit(title, (tx, ty))
 
-        # Subtitle
+        #bawah judul
         subtitle = self.subtitle_font.render("Grow Your Plants", True, (50, 50, 50))
         subtitle_y = int(self.HEIGHT * 0.43)
         self.screen.blit(subtitle, (self.WIDTH // 2 - subtitle.get_width() // 2, subtitle_y))
 
-        # start button pulse
+        #start pulse
         scale = 1 + 0.03 * math.sin(self.pulse_t)
         btn_scaled = pygame.transform.smoothscale(
             self.button_panel,
@@ -122,7 +115,7 @@ class Homepage:
         btn_rect = btn_scaled.get_rect(center=self.button_rect.center)
         self.screen.blit(btn_scaled, btn_rect)
 
-        # START text
+        #tulisan start
         start_text = self.start_font.render("START", True, (255, 255, 255))
         shadow = self.start_font.render("START", True, (240, 240, 240))
         sx = btn_rect.centerx - start_text.get_width() // 2
