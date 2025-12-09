@@ -10,12 +10,10 @@ class GrowthMelon:
         self.width = screen.get_width()
         self.height = screen.get_height()
 
-        #Background
         bg_path = os.path.join("assets", "images", "bg-select.png")
         self.background = pygame.image.load(bg_path)
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
-        #Fonts
         font_path = os.path.join("assets", "fonts", "Heyam.ttf")
         digits_path = os.path.join("assets", "fonts", "Super Joyful.ttf")
         try:
@@ -31,7 +29,6 @@ class GrowthMelon:
             self.font_small = pygame.font.Font(None, 24)
             self.font_digits = pygame.font.Font(digits_path, 28)
 
-        #Colors
         self.SOIL_BROWN = (101, 67, 33)
         self.SOIL_DARK = (76, 50, 25)
 
@@ -44,7 +41,6 @@ class GrowthMelon:
         self.WATER_BLUE = (135, 206, 250)
         self.BUTTON_GREEN = (126, 176, 105)
 
-        #Stages
         self.stages = [
             "Biji", "Kecambah", "Daun Awal", "Daun Besar",
             "Vegetatif", "Bunga", "Buah Muda", "Buah Matang", "Siap Panen"
@@ -54,7 +50,6 @@ class GrowthMelon:
         self.growth_progress = 0
         self.stage_requirements = [18, 25, 35, 45, 55, 65, 75, 85]
 
-        # Nutrients
         self.water_level = 30
         self.sunlight_level = 30
         self.fertilizer_level = 30
@@ -63,7 +58,6 @@ class GrowthMelon:
         self.sunlight_consumption = 2
         self.fertilizer_consumption = 2
 
-        # Cloud
         self.cloud = {
             'x': self.width // 4,
             'y': 100,
@@ -74,7 +68,6 @@ class GrowthMelon:
             'rain_drops': []
         }
 
-        # Sun
         self.sun = {
             'x': self.width - 150,
             'y': 100,
@@ -82,7 +75,6 @@ class GrowthMelon:
             'glow': 0
         }
 
-        # Fertilizer bag
         self.fertilizer_bag = {
             'x': self.width - 200,
             'y': self.height - 200,
@@ -90,7 +82,6 @@ class GrowthMelon:
             'height': 100
         }
 
-        # Funfact sekali saja
         self.show_fact = False
         self.funfact_shown = False
         self.fact_text = [
@@ -100,7 +91,6 @@ class GrowthMelon:
         ]
         self.current_fact = ""
 
-        # Panen sistem
         self.fruit_positions = []
         self.harvested_fruits = []
         self.total_harvested = 0
@@ -111,7 +101,6 @@ class GrowthMelon:
         self.time = 0
         self.plant_sway = 0
 
-    #SKY 
     def draw_sky_elements(self):
         cx, cy = int(self.cloud['x']), int(self.cloud['y'])
 
@@ -126,11 +115,9 @@ class GrowthMelon:
                                  (int(d['x']), int(d['y'])),
                                  (int(d['x']), int(d['y'])+8), 2)
 
-        # SUN
         sx, sy = self.sun['x'], self.sun['y']
         r = self.sun['radius']
 
-        # glow
         for i in range(3):
             glow_radius = r + 20 - i * 7
             glow_alpha = 30 - i * 10
@@ -139,7 +126,6 @@ class GrowthMelon:
                                (glow_radius, glow_radius), glow_radius)
             self.screen.blit(surf, (sx - glow_radius, sy - glow_radius))
 
-        # rays
         for i in range(12):
             ang = math.radians(i*30 + self.time*10)
             pygame.draw.line(
@@ -148,11 +134,9 @@ class GrowthMelon:
                 (sx + math.cos(ang)*(r+25), sy + math.sin(ang)*(r+25)), 4
             )
 
-        # main sun body
         pygame.draw.circle(self.screen, (255,200,0), (sx,sy), r)
         pygame.draw.circle(self.screen, (255,230,90), (sx,sy), r-5)
 
-        # WHITE HIGHLIGHT (DITAMBAHKAN)
         pygame.draw.circle(self.screen, (255,255,200), (sx-10, sy-10), 15)
 
     def draw_soil(self):
@@ -199,7 +183,7 @@ class GrowthMelon:
             return
 
         if self.current_stage >= 1:
-            pygame.draw.line(self.screen, (70,150,80),(cx, y),(cx+sway, y-25),5)
+            pygame.draw.line(self.screen, (70,150,80),(cx, y),(cx+sway, y-25),5) #menggambah garis primitif untuk batangnya
 
         if self.current_stage >= 2:
             self.draw_leaf(cx-30, y-55, size=40)
@@ -453,7 +437,7 @@ class GrowthMelon:
             fx, fy = int(fruit['x']), int(fruit['y'])
             surf = pygame.Surface((60,60), pygame.SRCALPHA)
             pygame.draw.ellipse(surf, self.MELON_RIPE, (10,15,40,30))
-            rot = pygame.transform.rotate(surf, fruit['rotation'])
+            rot = pygame.transform.rotate(surf, fruit['rotation']) #menggelinding
             rect = rot.get_rect(center=(fx,fy))
             self.screen.blit(rot, rect)
 
