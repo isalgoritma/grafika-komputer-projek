@@ -10,12 +10,10 @@ class GrowthLettuce:
         self.width = screen.get_width()
         self.height = screen.get_height()
 
-        # Background
         bg_path = os.path.join("assets", "images", "bg-select.png")
         self.background = pygame.image.load(bg_path)
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
-        # Fonts
         font_path = os.path.join("assets", "fonts", "Heyam.ttf")
         digits_path = os.path.join("assets", "fonts", "Super Joyful.ttf")
         try:
@@ -29,7 +27,6 @@ class GrowthLettuce:
             self.font_small = pygame.font.Font(None, 24)
             self.font_digits = pygame.font.Font(digits_path, 28)
 
-        # Colors
         self.WHITE = (255, 255, 255)
         self.WATER_BLUE = (135, 206, 250)
         self.BUTTON_GREEN = (126, 176, 105)
@@ -41,7 +38,6 @@ class GrowthLettuce:
         self.SOIL_BROWN = (101, 67, 33)
         self.SOIL_DARK = (76, 50, 25)
 
-        # Growth stages
         self.stages = [
             "Biji",
             "Kecambah",
@@ -50,12 +46,10 @@ class GrowthLettuce:
             "Panen"
         ]
 
-        # Fun Fact System
         self.show_fact = False
         self.funfact_shown = False   
         self.fact_text = [
             "Selada adalah sayuran berdaun yang pertama kali dibudidayakan oleh bangsa Mesir.",
-            "Selada mengandung 95% air, sehingga sangat menyegarkan!",
             "Selada kaya vitamin A dan K, baik untuk kulit dan tulang."
         ]
         self.current_fact = ""
@@ -65,7 +59,6 @@ class GrowthLettuce:
 
         self.stage_requirements = [12, 25, 40, 55]  
 
-        # Nutrients
         self.water_level = 30
         self.sunlight_level = 30
         self.fertilizer_level = 30
@@ -80,7 +73,7 @@ class GrowthLettuce:
         self.harvested_fruits = []      
         self.total_harvested = 0        
 
-        # Cloud
+
         self.cloud = {
             'x': self.width//4,
             'y': 100,
@@ -91,7 +84,6 @@ class GrowthLettuce:
             'rain_drops': []
         }
 
-        # Sun
         self.sun = {
             'x': self.width - 150,
             'y': 100,
@@ -99,7 +91,6 @@ class GrowthLettuce:
             'glow': 0
         }
 
-        # Fertilizer bag
         self.fertilizer_bag = {
             'x': self.width - 200,
             'y': self.height - 200,
@@ -117,7 +108,6 @@ class GrowthLettuce:
         if not self.show_fact:
             return
 
-        # Background popup
         box_w, box_h = 600, 200
         box = pygame.Rect(
             self.width//2 - box_w//2,
@@ -128,7 +118,6 @@ class GrowthLettuce:
         pygame.draw.rect(self.screen, (0,0,0,180), box, border_radius=20)
         pygame.draw.rect(self.screen, self.WHITE, box, 3, border_radius=20)
 
-        # Text
         fact = self.font_button.render("Fun Fact:", True, self.WHITE)
         self.screen.blit(fact, (box.x + 20, box.y + 20))
 
@@ -151,7 +140,6 @@ class GrowthLettuce:
             self.screen.blit(txt, (box.x + 20, box.y + y_offset))
             y_offset += 28
 
-        # Close button
         close = pygame.Rect(box.centerx - 60, box.bottom - 55, 120, 40)
         pygame.draw.rect(self.screen, self.BUTTON_GREEN, close, border_radius=12)
         pygame.draw.rect(self.screen, self.WHITE, close, 2, border_radius=12)
@@ -165,7 +153,6 @@ class GrowthLettuce:
     def draw_sky(self):
         cx, cy = self.cloud['x'], self.cloud['y']
 
-        # cloud
         pygame.draw.ellipse(self.screen, (200,200,200), (cx+5,cy+5,60,40))
         pygame.draw.ellipse(self.screen, self.WHITE, (cx,cy,60,40))
         pygame.draw.ellipse(self.screen, self.WHITE, (cx+40,cy,70,50))
@@ -177,7 +164,6 @@ class GrowthLettuce:
                                  (d['x'], d['y']),
                                  (d['x'], d['y']+8), 2)
 
-        # sun
         sx, sy = self.sun['x'], self.sun['y']
         r = self.sun['radius']
 
@@ -201,7 +187,6 @@ class GrowthLettuce:
         pygame.draw.circle(self.screen, (255,255,200), (sx - 10,sy - 10), 15)
 
     def draw_lettuce_harvest(self, x, y):
-        # posisi "buah" selada yang bisa diklik
         self.fruit_positions = [
             (x - 40, y - 80),
             (x,      y - 100),
@@ -213,7 +198,6 @@ class GrowthLettuce:
             if i in [f['id'] for f in self.harvested_fruits]:
                 continue
 
-            # buah selada (simbol mini lettuce) → PAKAI fx, fy
             pygame.draw.circle(self.screen, (120,230,120), (fx, fy), 15)
             pygame.draw.circle(self.screen, (80,160,80), (fx-5, fy-5), 8)
 
@@ -229,13 +213,11 @@ class GrowthLettuce:
         soil_y = self.soil_y
         sway = math.sin(self.plant_sway) * 3
 
-        # Tahap 0 — Biji
         if self.current_stage == 0:
             pygame.draw.ellipse(self.screen, (80, 50, 20),
                                 (cx-8, soil_y+18, 16, 10))
             return
 
-        # Tahap 1 — Kecambah
         if self.current_stage == 1:
             pygame.draw.line(self.screen, (60, 150, 70),
                             (cx, soil_y), (cx + sway, soil_y - 25), 4)
@@ -243,7 +225,6 @@ class GrowthLettuce:
             self.draw_lettuce_leaf(cx + 12, soil_y - 32, size=18, angle=15)
             return
 
-        # Tahap 2 — Vegetatif Awal
         if self.current_stage == 2:
             pygame.draw.line(self.screen, (60, 150, 70),
                             (cx, soil_y), (cx + sway, soil_y - 30), 4)
@@ -251,32 +232,28 @@ class GrowthLettuce:
                 self.draw_lettuce_leaf(cx + dx, soil_y - 50, size=28, angle=dx)
             return
 
-        # Tahap 3 — Vegetatif Besar (perbaiki batang biar nggak LDR)
         if self.current_stage == 3:
-            stem_top_y = soil_y - 55  # sebelumnya -25 (terlalu pendek)
+            stem_top_y = soil_y - 55  
             pygame.draw.line(self.screen, (60, 150, 70),
                             (cx, soil_y), (cx + sway, stem_top_y), 4)
             for dx in [-60, -30, 0, 30, 60]:
                 self.draw_lettuce_leaf(cx + dx, soil_y - 70, size=40, angle=dx//2)
             return
 
-        # Tahap 4 — PANEN → daun + buah panen (batang juga dipanjangkan)
         if self.current_stage == 4:
-            stem_top_y = soil_y - 70   # dekat dengan daun besar
+            stem_top_y = soil_y - 70   
             pygame.draw.line(self.screen, (60, 150, 70),
                             (cx, soil_y), (cx + sway, stem_top_y), 4)
 
             for dx in [-80, -50, -20, 0, 20, 50, 80]:
                 self.draw_lettuce_leaf(cx + dx, soil_y - 85, size=55, angle=dx//2)
 
-            # *** Gambar buah untuk dipanen ***
             self.draw_lettuce_harvest(cx, soil_y)
 
     def draw_lettuce_leaf(self, x, y, size=40, angle=0):
-        """Daun selada keriting berbentuk roset."""
         leaf = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
 
-        pts = []
+        pts = [] # ============= menggunakan fungsi trigonometri, menggunakan algo mtk agar lebih alami
         for i in range(36):
             ang = math.radians(i * 10)
             r = size * (0.85 + 0.15 * math.sin(i * 2))
@@ -318,7 +295,6 @@ class GrowthLettuce:
                 continue
 
             if math.dist(mouse, (fx, fy)) < 35:
-                # animasi jatuh
                 self.harvested_fruits.append({
                     'id': i,
                     'x': fx,
@@ -332,13 +308,11 @@ class GrowthLettuce:
                 self.total_harvested += 1
                 self.show_message(f"Panen {self.total_harvested}/3")
 
-                # FUN FACT: hanya sekali (panen pertama)
                 if not self.funfact_shown:
                     self.current_fact = random.choice(self.fact_text)
                     self.show_fact = True
                     self.funfact_shown = True
 
-                # Jika sudah panen semua → pindah ke apresiasi
                 if self.total_harvested >= 3:
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1500)
                     self.show_message("Semua buah berhasil dipanen!")
@@ -383,7 +357,6 @@ class GrowthLettuce:
             pct = self.font_digits.render(f"{int(val)}%", True, self.WHITE)
             self.screen.blit(pct, (bx+120 + bw + 10, y))
 
-        # back button
         back = pygame.Rect(self.width-150, self.height-70, 120, 50)
         pygame.draw.rect(self.screen, self.BUTTON_GREEN, back, border_radius=12)
         pygame.draw.rect(self.screen, self.WHITE, back, 2, border_radius=12)
@@ -391,8 +364,7 @@ class GrowthLettuce:
         bt = self.font_button.render("Kembali", True, self.WHITE)
         self.screen.blit(bt, (back.centerx - bt.get_width()//2,
                                back.centery - bt.get_height()//2))
-        
-        # POPUP message
+
         if self.message_timer > 0:
             msg = self.font_digits.render(self.message, True, self.WHITE)
             self.screen.blit(msg, (
@@ -402,7 +374,7 @@ class GrowthLettuce:
 
     def show_message(self, text):
         self.message = text
-        self.message_timer = 2.0  # tampil selama 2 detik
+        self.message_timer = 2.0  
 
     def handle_event(self, event):
         if event.type == pygame.USEREVENT + 1:
@@ -411,11 +383,9 @@ class GrowthLettuce:
             return
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # kalau sudah tahap Panen → klik buat panen
             if self.current_stage == len(self.stages) - 1:
                 self.harvest_fruit(event.pos)
 
-            # kalau lagi buka fun fact → hanya handle tombol tutup
             if self.show_fact:
                 if hasattr(self, "close_button_rect") and self.close_button_rect.collidepoint(event.pos):
                     self.show_fact = False
@@ -428,20 +398,17 @@ class GrowthLettuce:
                 self.scene_manager.change_scene("pilih_buah")
                 return
 
-            # cloud
             r = pygame.Rect(self.cloud['x'],self.cloud['y'],
                             self.cloud['width'],self.cloud['height'])
             if r.collidepoint(m):
                 self.cloud['dragging'] = True
                 self.cloud['raining'] = True
 
-            # sun
             if math.dist(m, (self.sun['x'],self.sun['y'])) < self.sun['radius']+30:
                 self.sunlight_level = min(100, self.sunlight_level+25)
                 self.sun['glow'] = 50
                 self.show_message("Cahaya +25%!")
 
-            # fertilizer
             bag = self.fertilizer_bag
             b = pygame.Rect(bag['x'], bag['y'], bag['width'], bag['height'])
             if b.collidepoint(m):
@@ -463,7 +430,6 @@ class GrowthLettuce:
         self.time += dt
         self.plant_sway += dt*2
 
-        # RAIN / WATER 
         if self.cloud['raining']:
             if random.random() < 0.5:
                 self.cloud['rain_drops'].append({
@@ -486,7 +452,6 @@ class GrowthLettuce:
         if self.message_timer > 0:
             self.message_timer -= dt
 
-        # GROWTH CONDITIONS 
         enough = (
             self.water_level >= 60 and
             self.sunlight_level >= 60 and
@@ -502,11 +467,9 @@ class GrowthLettuce:
                     self.current_stage += 1
                     self.growth_progress = 0
 
-            # Jika sudah masuk stage terakhir (Panen), stop perhitungan req
             else:
                 self.growth_progress = 0
 
-        # update animasi buah yang jatuh
         for fruit in self.harvested_fruits[:]:
             fruit['x'] += fruit['vx']
             fruit['y'] += fruit['vy']
@@ -516,7 +479,7 @@ class GrowthLettuce:
             if fruit['y'] > self.height + 50:
                 self.harvested_fruits.remove(fruit)
 
-        # ====== NUTRIENT DECAY ======
+
         self.water_level = max(0, self.water_level - 1 * dt)
         self.sunlight_level = max(0, self.sunlight_level - 1 * dt)
         self.fertilizer_level = max(0, self.fertilizer_level - 1 * dt)
@@ -530,7 +493,6 @@ class GrowthLettuce:
         self.draw_plant()
         self.draw_fertilizer_bag() # type: ignore
 
-        # gambar buah yang jatuh (hasil panen)
         for fruit in self.harvested_fruits:
             fx, fy = int(fruit['x']), int(fruit['y'])
             surf = pygame.Surface((60,60), pygame.SRCALPHA)
